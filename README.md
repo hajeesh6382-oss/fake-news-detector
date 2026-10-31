@@ -2,7 +2,8 @@
 
 An educational, rule-based credibility analysis application designed to identify sensationalist patterns, red-flag keywords, and authoritative citations in news headlines and social statements.
 
-![Fake News Detector Preview](https://img.shields.io/badge/Status-Live%20on%20Vercel-success?style=for-the-badge)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-fake--news--detector--tau--roan.vercel.app-success?style=for-the-badge&logo=vercel)](https://fake-news-detector-tau-roan.vercel.app)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-hajeesh6382--oss%2Ffake--news--detector-181717?style=for-the-badge&logo=github)](https://github.com/hajeesh6382-oss/fake-news-detector)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 ---
