@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fake News Detector &ndash; Credibility & Fact Analysis Engine</title>
+  <meta name="description" content="Instant rule-based fake news and headline credibility detector. Inspects suspicious phrasing, sensationalism, capitalization, and verified institutional sources.">
+  <meta name="keywords" content="fake news detector, news credibility, misinformation detection, fact check tool, headline analysis">
+  <meta name="author" content="Hajeesh">
+  <meta property="og:title" content="Fake News Detector &ndash; Credibility Analyzer">
+  <meta property="og:description" content="Check news headlines and statements for sensationalism, red-flag keywords, and authoritative citations in real-time.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body>
+
+  <!-- Background decorative light gradients -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Header Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title-wrap">
+            <h1>Fake News Detector</h1>
+            <span class="version-tag">PROTOTYPE v2.0</span>
+          </div>
+          <p class="brand-subtitle">Linguistic heuristics &amp; source credibility verification engine</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="icon-button" aria-label="Toggle dark/light theme" title="Toggle theme">
+          <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <a id="githubRepoLink" href="https://github.com/hajeesh6382-oss/fake-news-detector" target="_blank" rel="noopener noreferrer" class="github-button" title="View Source on GitHub">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+    
+    <!-- Top Alert Notification Bar -->
+    <div class="prototype-banner">
+      <span class="badge-tag">Educational Notice</span>
+      <span>This analyzer implements linguistic &amp; keyword-based heuristics. Predictions are preliminary guidance, not legal or journalistic verification.</span>
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <div class="workspace-grid">
+
+      <!-- Left Column: Input Panel -->
+      <section class="card input-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <h2>Headline or News Statement</h2>
+          </div>
+          <span class="counter-badge" id="charCounter">0 characters &bull; 0 words</span>
+        </div>
+
+        <!-- Sample Presets -->
+        <div class="examples-wrapper">
+          <span class="examples-label">Try quick samples:</span>
+          <div class="example-pills">
+            <button type="button" class="pill-btn pill-fake" id="exampleFakeBtn">
+              <span class="dot"></span> Fake Alert
+            </button>
+            <button type="button" class="pill-btn pill-real" id="exampleRealBtn">
+              <span class="dot"></span> Credible News
+            </button>
+            <button type="button" class="pill-btn pill-neutral" id="exampleNeutralBtn">
+              <span class="dot"></span> Neutral
+            </button>
+            <button type="button" class="pill-btn pill-clickbait" id="exampleClickbaitBtn">
+              <span class="dot"></span> Medical Clickbait
+            </button>
+          </div>
+        </div>
+
+        <form id="newsForm" onsubmit="return false;">
+          <div class="textarea-container">
+            <textarea 
+              id="newsInput" 
+              name="news" 
+              rows="5" 
+              placeholder="Paste or type a headline, social media post, or news excerpt here to analyze..."
+              aria-label="News text to check"
+              required></textarea>
+            
+            <button type="button" id="clearTextBtn" class="clear-inside-btn" title="Clear text" aria-label="Clear text">
+              &times;
+            </button>
+          </div>
+
+          <div id="validationMessage" class="validation-message" role="alert"></div>
+
+          <!-- Actions Controls -->
+          <div class="form-actions-row">
+            <div class="button-group">
+              <button type="button" id="checkBtn" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>Check News</span>
+                <kbd class="key-shortcut">Ctrl+Enter</kbd>
+              </button>
+              <button type="button" id="resetBtn" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M21 3v5h-5"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                  <path d="M3 21v-5h5"></path>
+                </svg>
+                <span>Reset</span>
+              </button>
+            </div>
+
+            <!-- Live toggle option -->
+            <label class="toggle-control" title="Automatically evaluate as you type">
+              <input type="checkbox" id="liveModeToggle">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Realtime analyze</span>
+            </label>
+          </div>
+        </form>
+
+        <!-- Heuristics Info Dropdown -->
+        <details class="rules-details">
+          <summary>
+            <span>How does this rule engine work?</span>
+            <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="rules-content">
+            <p>The detector evaluates your statement against three heuristic layers:</p>
+            <ul>
+              <li><strong>Sensational Red Flags (+1 Suspicion each):</strong> Common clickbait terms like <em>shocking, miracle, exposed, 100% cure, doctors hate, banned, secret, urgent</em>, etc.</li>
+              <li><strong>Authoritative Citations (+1 Credibility each):</strong> Formal institutional identifiers like <em>according to, official, ministry, report, confirmed, study, police, university</em>, etc.</li>
+              <li><strong>Stylistic Flags (+1 Suspicion each):</strong> Excessive punctuation (<code>!!</code> or <code>??</code>) and heavy capitalization (>70% uppercase).</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- Right Column: Result Dashboard -->
+      <section class="card result-card" id="resultCard">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <h2>Analysis Verdict</h2>
+          </div>
+          <div id="verdictTimestamp" class="timestamp-badge">Ready for input</div>
+        </div>
+
+        <!-- Initial Placeholder State -->
+        <div id="emptyResultState" class="empty-state">
+          <div class="radar-scan">
+            <div class="radar-circle"></div>
+            <div class="radar-icon">🔍</div>
+          </div>
+          <h3>Awaiting Statement</h3>
+          <p>Type or paste any news text or click one of the quick samples to inspect credibility metrics.</p>
+        </div>
+
+        <!-- Active Result Presentation (populated by JS) -->
+        <div id="activeResultState" class="active-result hidden">
+          
+          <!-- Big Verdict Banner -->
+          <div id="verdictBanner" class="verdict-banner">
+            <div class="verdict-icon-box" id="verdictIcon">🛡️</div>
+            <div class="verdict-text-box">
+              <span class="verdict-label-small">Credibility Rating</span>
+              <h3 id="verdictTitle" class="verdict-title">ANALYSIS</h3>
+              <p id="verdictSubtitle" class="verdict-subtitle">Detailed breakdown below</p>
+            </div>
+          </div>
+
+          <!-- Score Metrics Row -->
+          <div class="metrics-grid">
+            <div class="metric-box metric-fake">
+              <span class="metric-label">Suspicion Score</span>
+              <div class="metric-val" id="fakeScoreVal">0</div>
+              <span class="metric-hint">Flags &amp; Sensationalism</span>
+            </div>
+            <div class="metric-box metric-real">
+              <span class="metric-label">Credibility Score</span>
+              <div class="metric-val" id="realScoreVal">0</div>
+              <span class="metric-hint">Official Citations</span>
+            </div>
+            <div class="metric-box metric-balance">
+              <span class="metric-label">Signal Delta</span>
+              <div class="metric-val" id="signalDeltaVal">0</div>
+              <span class="metric-hint">Net Credibility</span>
+            </div>
+          </div>
+
+          <!-- Progress Confidence Bar -->
+          <div class="confidence-bar-wrap">
+            <div class="confidence-labels">
+              <span>Suspicious Tendency</span>
+              <span id="confidencePercentage">50% Neutral</span>
+              <span>Credible Tendency</span>
+            </div>
+            <div class="meter-track">
+              <div id="meterFill" class="meter-fill"></div>
+            </div>
+          </div>
+
+          <!-- Highlighted Text Preview -->
+          <div class="highlight-section">
+            <div class="section-title-sm">Identified Keyword Highlights:</div>
+            <div id="highlightedContent" class="highlighted-text-box"></div>
+          </div>
+
+          <!-- Reasons & Heuristic Findings List -->
+          <div class="reasons-section">
+            <div class="section-title-sm">Heuristic Insights &amp; Rationale:</div>
+            <ul id="reasonsList" class="reasons-list"></ul>
+          </div>
+
+          <!-- Result Card Action Utilities -->
+          <div class="result-actions">
+            <button type="button" id="copyResultBtn" class="btn btn-outline" title="Copy result summary">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Analysis</span>
+            </button>
+            <button type="button" id="shareResultBtn" class="btn btn-outline" title="Share analysis">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+              <span>Share</span>
+            </button>
+          </div>
+
+          <!-- Disclaimer Note -->
+          <p class="result-disclaimer">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            This evaluation is generated algorithmically through keyword frequencies and stylistic rules. Always consult verified fact-checking institutions (such as Snopes, AP Fact Check, PolitiFact) before accepting or sharing claims.
+          </p>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- History Log Section -->
+    <section class="card history-card">
+      <div class="card-header history-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <h2>Checked Statements History</h2>
+          <span class="count-pill" id="historyCount">0</span>
+        </div>
+
+        <div class="history-controls">
+          <div class="filter-pills" id="historyFilters">
+            <button type="button" class="filter-btn active" data-filter="all">All</button>
+            <button type="button" class="filter-btn" data-filter="fake">Fake</button>
+            <button type="button" class="filter-btn" data-filter="real">Likely Real</button>
+            <button type="button" class="filter-btn" data-filter="unsure">Uncertain</button>
+          </div>
+          <button type="button" id="clearHistoryBtn" class="btn btn-sm btn-ghost" title="Clear analysis history">
+            Clear History
+          </button>
+        </div>
+      </div>
+
+      <div class="history-list-wrapper">
+        <ul id="historyList" class="history-list">
+          <li class="history-empty">No statements analyzed yet in this session.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Methodology & Keyword Lexicon Drawer -->
+    <section class="card lexicon-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <h2>Detection Lexicon &amp; Dictionary</h2>
+        </div>
+        <span class="lexicon-note">Rule-based corpus</span>
+      </div>
+
+      <div class="lexicon-columns">
+        <div class="lexicon-col lexicon-fake-col">
+          <div class="lexicon-col-header">
+            <span class="dot red-dot"></span>
+            <h3>Suspicious Keywords (Fake Indicator)</h3>
+          </div>
+          <div class="tag-cloud" id="fakeKeywordCloud"></div>
+        </div>
+
+        <div class="lexicon-col lexicon-real-col">
+          <div class="lexicon-col-header">
+            <span class="dot green-dot"></span>
+            <h3>Credible Keywords (Real Indicator)</h3>
+          </div>
+          <div class="tag-cloud" id="realKeywordCloud"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>Fake News Detector &bull; Full-stack Client &amp; Python Standalone Application</p>
+      <div class="footer-links">
+        <span>Developed with Vanilla JS &amp; Modern CSS</span>
+        <span>&bull;</span>
+        <span>Hosted seamlessly on Vercel</span>
+        <span>&bull;</span>
+        <a href="#newsInput" class="back-to-top">Back to top &uarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification element -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- JavaScript logic -->
+  <script src="app.js"></script>
+</body>
+</html>
