@@ -233,18 +233,7 @@ body {
 [data-theme="light"] .moon-icon { display: block; }
 
 .github-button {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: var(--transition);
+  display: none !important;
 }
 .github-button:hover {
   border-color: var(--text-muted);
@@ -444,7 +433,8 @@ textarea:focus {
   margin-bottom: 10px;
   display: none;
 }
-.validation-message.active {
+.validation-message.active,
+.validation-message.visible {
   display: block;
 }
 
@@ -660,8 +650,10 @@ textarea:focus {
 }
 
 /* Active Verdict Banner */
+.hidden,
+#emptyResultState.hidden,
 .active-result.hidden {
-  display: none;
+  display: none !important;
 }
 .verdict-banner {
   display: flex;
