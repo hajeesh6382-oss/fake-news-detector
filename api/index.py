@@ -8,3 +8,4 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 from backend.main import app
+
