@@ -97,7 +97,8 @@ def extract_article_content(url_input: str) -> ExtractedArticle:
             warnings=warnings
         )
 
-    # 4. Remove Irrelevant / Ad HTML Elements
+    # 4. Parse HTML and Remove Irrelevant / Ad HTML Elements
+    soup = BeautifulSoup(html, "html.parser")
     for element in soup(["script", "style", "nav", "footer", "aside", "noscript", "svg", "button", "iframe", "form"]):
         element.extract()
     for ad in soup.find_all(class_=re.compile(r"(ad-|advertisement|sponsored|banner|social-share|cookie)", re.I)):
