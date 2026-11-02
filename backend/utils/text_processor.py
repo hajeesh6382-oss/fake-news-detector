@@ -1,7 +1,7 @@
 import re
 import math
 from collections import Counter
-from typing import List, Dict, Any, Set, Tuple
+from typing import List, Dict, Any, Set, Tuple, Optional
 
 # Common English stop words
 STOP_WORDS: Set[str] = {
