@@ -77,3 +77,4 @@ def is_safe_url(url_str: str) -> Tuple[bool, Optional[str], str]:
         return True, None, url
     except Exception as e:
         return False, f"Security check failed: {str(e)}", ""
+

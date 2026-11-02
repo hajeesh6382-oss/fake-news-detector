@@ -30,3 +30,4 @@ def clear_history_records():
     """DELETE /api/history - Clears all history."""
     deleted_count = clear_all_history()
     return {"status": "cleared", "deleted_count": deleted_count}
+

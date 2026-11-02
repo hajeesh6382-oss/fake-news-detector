@@ -161,3 +161,4 @@ def extract_article_claims(headline: str, text: str) -> List[ClaimItem]:
     if ai_claims:
         return ai_claims
     return extract_claims_heuristic(headline, text)
+

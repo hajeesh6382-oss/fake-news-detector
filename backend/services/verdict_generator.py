@@ -175,3 +175,4 @@ def generate_verdict(
         trusted_sources_checked=list(config.ALL_TRUSTED_DOMAINS[:10]),
         created_at=datetime.utcnow().isoformat()
     )
+

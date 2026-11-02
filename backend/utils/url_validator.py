@@ -36,3 +36,4 @@ def extract_domain_from_url(url_str: str) -> str:
         return host.lower().replace("www.", "")
     except Exception:
         return ""
+

@@ -36,3 +36,4 @@ class VerificationSummary(BaseModel):
     supporting_sources: int = 0
     contradictory_sources: int = 0
     unavailable_sources: int = 0
+

@@ -167,3 +167,4 @@ def compare_and_compile_evidence(
     )
 
     return evidence_sources, platform_comparison, summary
+

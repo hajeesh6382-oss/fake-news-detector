@@ -756,35 +756,65 @@ async function performCheck() {
 
   validationMessage.classList.remove("active");
 
-  // If backend is active, use the AI Fact-Checking endpoint
-  if (isBackendOnline) {
-    showProcessing("Verifying Statement Against Evidence...", "NLP claim extraction & real-time search across Google Fact Check and news repositories");
-    try {
-      const resp = await fetch(`${API_BASE}/api/verify/text`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-      });
+  // 1. Progressive Loading Animation (All 8 Stages)
+  showProcessing("1. Extracting statement assertions...", "NLP parsing of factual claims, entities, and citations");
+  let t1 = setTimeout(() => updateProcessingStep(1, "2. Identifying verifiable claims...", "Extracting quotes, numbers, and key assertions"), 600);
+  let t2 = setTimeout(() => updateProcessingStep(2, "3. Searching international news platforms...", "Querying BBC, Reuters, AP, CNN, Guardian archives"), 1200);
+  let t3 = setTimeout(() => updateProcessingStep(3, "4. Searching Indian news platforms...", "Querying The Hindu, Indian Express, TOI, NDTV, ANI"), 1800);
+  let t4 = setTimeout(() => updateProcessingStep(4, "5. Cross-referencing wire reports...", "Evaluating independent coverage vs syndicated reprints"), 2400);
+  let t5 = setTimeout(() => updateProcessingStep(5, "6. Auditing official debunks...", "Auditing PIB Fact Check, BOOM, Alt News, and Snopes"), 3000);
+  let t6 = setTimeout(() => updateProcessingStep(6, "7. Calculating evidence alignment...", "Computing TF-IDF semantic correlation and entity overlap"), 3600);
+  let t7 = setTimeout(() => updateProcessingStep(7, "8. Synthesizing AI verdict...", "Generating evidence-based REAL / FAKE / UNVERIFIED verdict"), 4200);
 
-      if (resp.ok) {
-        const data = await resp.json();
-        hideProcessing();
-        renderFullEvidenceDashboard(data);
-        renderSidebarAnalysis(data);
-        loadDatabaseHistory();
+  const clearTimers = () => {
+    clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
+    clearTimeout(t5); clearTimeout(t6); clearTimeout(t7);
+  };
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+    const resp = await fetch(`${API_BASE}/api/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text }),
+      signal: controller.signal
+    }).catch(() => null);
+
+    clearTimeout(timeoutId);
+    clearTimers();
+
+    if (resp && resp.ok) {
+      const data = await resp.json();
+      hideProcessing();
+
+      if (data.status === "error") {
+        renderErrorState(data);
+        showToast(`⚠️ ${data.error_title || "Verification notice"}`);
         return;
       }
-    } catch (e) {
-      console.warn("Backend verification error, falling back to local engine:", e);
+
+      renderSidebarAnalysis(data);
+      renderFullEvidenceDashboard(data);
+      saveLocalHistory(data);
+      loadDatabaseHistory();
+      showToast(`✅ Verified: ${data.verdict || data.classification}`);
+      return;
     }
-    hideProcessing();
+  } catch (e) {
+    console.warn("Backend verification error, falling back to local engine:", e);
+  } finally {
+    clearTimers();
   }
 
   // Client-side heuristics fallback
+  hideProcessing();
   const result = analyzeNewsLocal(text);
   renderSidebarAnalysis(result);
   renderFullEvidenceDashboard(createEvidenceObjFromLocal(result));
   saveLocalHistory(result);
+  showToast(`✅ Analyzed: ${result.classification || result.verdict}`);
 }
 
 // ============================================================
@@ -1154,8 +1184,8 @@ function renderFullEvidenceDashboard(data) {
   const sourcesSearchedCount = sum.sources_searched || 18;
   const sourcesRetrievedCount = sum.sources_retrieved !== undefined ? sum.sources_retrieved : (data.evidence_sources ? data.evidence_sources.length : (data.matching_sources ? data.matching_sources.length : 0));
   const matchingCount = sum.matching_articles !== undefined ? sum.matching_articles : (data.matching_sources ? data.matching_sources.length : 0);
-  const supportingCount = sum.supporting_sources !== undefined ? sum.supporting_sources : (data.supporting_evidence ? data.supporting_evidence.length : (data.classification.includes("REAL") ? 2 : 0));
-  const contradictoryCount = sum.contradictory_sources !== undefined ? sum.contradictory_sources : (data.contradicting_evidence ? data.contradicting_evidence.length : (data.classification.includes("FAKE") ? 1 : 0));
+  const supportingCount = sum.supporting_sources !== undefined ? sum.supporting_sources : (data.supporting_evidence ? data.supporting_evidence.length : (cls.includes("REAL") ? 2 : 0));
+  const contradictoryCount = sum.contradictory_sources !== undefined ? sum.contradictory_sources : (data.contradicting_evidence ? data.contradicting_evidence.length : (cls.includes("FAKE") ? 1 : 0));
   const unavailableCount = sum.unavailable_sources !== undefined ? sum.unavailable_sources : Math.max(0, sourcesSearchedCount - sourcesRetrievedCount);
 
   if (elSearched) elSearched.textContent = sourcesSearchedCount;
@@ -1212,7 +1242,7 @@ function renderFullEvidenceDashboard(data) {
   claims.forEach((c, idx) => {
     const item = document.createElement("div");
     item.className = "claim-card-item";
-    const statusText = c.verification_status || (data.classification.includes("REAL") ? "supported" : (data.classification.includes("FAKE") ? "contradicted" : "unverified"));
+    const statusText = c.verification_status || (cls.includes("REAL") ? "supported" : (cls.includes("FAKE") ? "contradicted" : "unverified"));
     const statusCls = statusText === "supported" ? "status-corroborated" : (statusText === "contradicted" ? "status-debunked" : "status-neutral");
     item.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -1610,6 +1640,53 @@ if (fetchUrlBtn) {
     showToast("Switched to News Article URL tab.");
   });
 }
+
+// ============================================================
+// News Article URL Verification Event Listeners
+// ============================================================
+if (verifyUrlBtn) {
+  verifyUrlBtn.addEventListener("click", verifyArticleUrl);
+}
+
+if (articleUrlInput) {
+  articleUrlInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      verifyArticleUrl();
+    }
+  });
+}
+
+if (pasteArticleUrlBtn) {
+  pasteArticleUrlBtn.addEventListener("click", async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim()) {
+          articleUrlInput.value = text.trim();
+          showToast("📋 Article URL pasted from clipboard!");
+          verifyArticleUrl();
+          return;
+        }
+      }
+    } catch (e) {}
+    const p = prompt("Paste news article URL here:");
+    if (p && p.trim()) {
+      articleUrlInput.value = p.trim();
+      verifyArticleUrl();
+    }
+  });
+}
+
+// Quick Sample News URL loader (called from link chips in index.html)
+window.loadSampleUrl = function(sampleUrl) {
+  if (articleUrlInput) {
+    switchInputTab("url");
+    articleUrlInput.value = sampleUrl;
+    showToast(`📰 Loaded: ${sampleUrl}`);
+    verifyArticleUrl();
+  }
+};
 
 // Copy & Share Full Dossier
 function copyFullDossier() {

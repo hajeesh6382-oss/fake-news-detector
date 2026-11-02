@@ -172,3 +172,4 @@ Do NOT use markdown code blocks."""
         logger.warning(f"Gemini fact analysis failed: {e}")
 
     return None
+

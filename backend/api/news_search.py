@@ -24,3 +24,4 @@ async def search_news_endpoint(req: SearchRequest):
         "count": len(results[:req.max_results]),
         "results": results[:req.max_results]
     }
+
