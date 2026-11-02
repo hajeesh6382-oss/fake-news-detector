@@ -4,26 +4,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/api/verify/(.*)",
-      "destination": "/api/verify.py"
-    },
-    {
-      "source": "/api/verify",
-      "destination": "/api/verify.py"
-    },
-    {
-      "source": "/api/health",
-      "destination": "/api/health.py"
-    },
-    {
-      "source": "/api/history/(.*)",
-      "destination": "/api/history.py"
-    },
-    {
-      "source": "/api/history",
-      "destination": "/api/history.py"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "/api/index.py"
     }
