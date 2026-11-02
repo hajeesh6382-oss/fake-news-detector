@@ -1,0 +1,1 @@
+from .factcheck_engine import verify_claims_against_trusted_sources

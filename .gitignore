@@ -6,3 +6,4 @@ __pycache__/
 Thumbs.db
 *.docx
 DOCUMENTATION.md
+*.db

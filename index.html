@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fake News Detector &ndash; Credibility & Fact Analysis Engine</title>
-  <meta name="description" content="Instant rule-based fake news and headline credibility detector. Inspects suspicious phrasing, sensationalism, capitalization, and verified institutional sources.">
-  <meta name="keywords" content="fake news detector, news credibility, misinformation detection, fact check tool, headline analysis">
+  <title>Veritas AI &ndash; Advanced Fake News Detection &amp; Fact Verification Platform</title>
+  <meta name="description" content="AI-powered news verification platform. Analyzes article URLs, YouTube videos, and claims with NLP, real-time fact-checking across trusted sources, and evidence dashboards.">
+  <meta name="keywords" content="fake news detector, news verification, youtube fact check, AI news verification, claim extraction, evidence dashboard">
   <meta name="author" content="Hajeesh">
-  <meta property="og:title" content="Fake News Detector &ndash; Credibility Analyzer">
-  <meta property="og:description" content="Check news headlines and statements for sensationalism, red-flag keywords, and authoritative citations in real-time.">
+  <meta property="og:title" content="Veritas AI &ndash; Advanced Fake News Detection Platform">
+  <meta property="og:description" content="Real-time multi-source fact-checking, YouTube transcript analysis, and evidence-backed credibility verdicts.">
   <meta property="og:type" content="website">
 
   <!-- Google Fonts: Inter & Outfit -->
@@ -21,14 +21,14 @@
 </head>
 <body>
 
-  <!-- Background decorative light gradients -->
+  <!-- Ambient light decorations -->
   <div class="ambient-glow glow-1"></div>
   <div class="ambient-glow glow-2"></div>
 
   <!-- Header Navigation -->
   <header class="app-header">
     <div class="header-container">
-      <div class="brand">
+      <div class="brand" id="brandLogoBtn" role="button" tabindex="0" title="Return to Dashboard">
         <div class="brand-icon">
           <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -37,14 +37,70 @@
         </div>
         <div>
           <div class="brand-title-wrap">
-            <h1>Fake News Detector</h1>
-            <span class="version-tag">PROTOTYPE v2.0</span>
+            <h1>Veritas AI</h1>
+            <span class="version-tag">ENTERPRISE v2.0</span>
           </div>
-          <p class="brand-subtitle">Linguistic heuristics &amp; source credibility verification engine</p>
+          <p class="brand-subtitle">Advanced AI News &amp; Video Fact Verification Platform</p>
         </div>
       </div>
 
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button type="button" class="nav-tab active" data-view="dashboard">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="verify">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Verify News</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="results">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span>Evidence Dashboard</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="history">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>History</span>
+          <span class="nav-badge" id="navHistoryBadge">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="sources">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>Trusted Sources</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="about">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>About</span>
+        </button>
+      </nav>
+
       <div class="header-actions">
+        <!-- Live Backend Status Pill -->
+        <div class="system-status-pill" id="systemStatusPill" title="Backend connection status">
+          <span class="status-indicator-dot"></span>
+          <span id="systemStatusText">Checking AI Engine...</span>
+        </div>
+
+        <!-- Theme Toggle -->
         <button id="themeToggleBtn" class="icon-button" aria-label="Toggle dark/light theme" title="Toggle theme">
           <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"></circle>
@@ -67,334 +123,852 @@
       <span>This analyzer implements linguistic &amp; keyword-based heuristics. Predictions are preliminary guidance, not legal or journalistic verification.</span>
     </div>
 
-    <!-- Main Workspace Grid -->
-    <div class="workspace-grid">
-
-      <!-- Left Column: Input Panel -->
-      <section class="card input-card">
-        <div class="card-header">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            <h2>Headline or News Statement</h2>
-          </div>
-          <span class="counter-badge" id="charCounter">0 characters &bull; 0 words</span>
-        </div>
-
-        <!-- Sample Presets -->
-        <div class="examples-wrapper">
-          <span class="examples-label">Try quick samples:</span>
-          <div class="example-pills">
-            <button type="button" class="pill-btn pill-fake" id="exampleFakeBtn">
-              <span class="dot"></span> Fake Alert
-            </button>
-            <button type="button" class="pill-btn pill-real" id="exampleRealBtn">
-              <span class="dot"></span> Credible News
-            </button>
-            <button type="button" class="pill-btn pill-neutral" id="exampleNeutralBtn">
-              <span class="dot"></span> Neutral
-            </button>
-            <button type="button" class="pill-btn pill-clickbait" id="exampleClickbaitBtn">
-              <span class="dot"></span> Medical Clickbait
-            </button>
-          </div>
-        </div>
-
-        <!-- Web News Copy & URL Helper Toolbar -->
-        <div class="web-copy-toolbar">
-          <button type="button" id="pasteClipboardBtn" class="toolbar-btn btn-paste" title="Paste news copied from another website (BBC, NDTV, WhatsApp, CNN, etc.)">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-            </svg>
-            <span>Paste Copied News</span>
-          </button>
-          <button type="button" id="fetchUrlBtn" class="toolbar-btn btn-url" title="Extract headline and inspect credibility of a news website link">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-            <span>Fetch from Website URL</span>
-          </button>
-          <span class="toolbar-hint">Copy news from any website and click paste to analyze</span>
-        </div>
-
-        <form id="newsForm" onsubmit="return false;">
-          <div class="textarea-container">
-            <textarea 
-              id="newsInput" 
-              name="news" 
-              rows="5" 
-              placeholder="Paste or type news copied from any website (BBC, CNN, NDTV, WhatsApp, etc.), or paste a news article URL..."
-              aria-label="News text to check"
-              required></textarea>
-            
-            <button type="button" id="clearTextBtn" class="clear-inside-btn" title="Clear text" aria-label="Clear text">
-              &times;
-            </button>
-          </div>
-
-          <div id="validationMessage" class="validation-message" role="alert"></div>
-
-          <!-- Actions Controls -->
-          <div class="form-actions-row">
-            <div class="button-group">
-              <button type="button" id="checkBtn" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <span>Check News</span>
-                <kbd class="key-shortcut">Ctrl+Enter</kbd>
-              </button>
-              <button type="button" id="resetBtn" class="btn btn-secondary">
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
-                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-                  <path d="M21 3v5h-5"></path>
-                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-                  <path d="M3 21v-5h5"></path>
-                </svg>
-                <span>Reset</span>
-              </button>
-            </div>
-
-            <!-- Live toggle option -->
-            <label class="toggle-control" title="Automatically evaluate as you type">
-              <input type="checkbox" id="liveModeToggle">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Realtime analyze</span>
-            </label>
-          </div>
-        </form>
-
-        <!-- Heuristics Info Dropdown -->
-        <details class="rules-details">
-          <summary>
-            <span>How does this rule engine work?</span>
-            <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </summary>
-          <div class="rules-content">
-            <p>The detector evaluates your statement against three heuristic layers:</p>
-            <ul>
-              <li><strong>Sensational Red Flags (+1 Suspicion each):</strong> Common clickbait terms like <em>shocking, miracle, exposed, 100% cure, doctors hate, banned, secret, urgent</em>, etc.</li>
-              <li><strong>Authoritative Citations (+1 Credibility each):</strong> Formal institutional identifiers like <em>according to, official, ministry, report, confirmed, study, police, university</em>, etc.</li>
-              <li><strong>Stylistic Flags (+1 Suspicion each):</strong> Excessive punctuation (<code>!!</code> or <code>??</code>) and heavy capitalization (>70% uppercase).</li>
-            </ul>
-          </div>
-        </details>
-      </section>
-
-      <!-- Right Column: Result Dashboard -->
-      <section class="card result-card" id="resultCard">
-        <div class="card-header">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-            <h2>Analysis Verdict</h2>
-          </div>
-          <div id="verdictTimestamp" class="timestamp-badge">Ready for input</div>
-        </div>
-
-        <!-- Initial Placeholder State -->
-        <div id="emptyResultState" class="empty-state">
-          <div class="radar-scan">
-            <div class="radar-circle"></div>
-            <div class="radar-icon">🔍</div>
-          </div>
-          <h3>Awaiting Statement</h3>
-          <p>Type or paste any news text or click one of the quick samples to inspect credibility metrics.</p>
-        </div>
-
-        <!-- Active Result Presentation (populated by JS) -->
-        <div id="activeResultState" class="active-result hidden">
-          
-          <!-- Big Verdict Banner -->
-          <div id="verdictBanner" class="verdict-banner">
-            <div class="verdict-icon-box" id="verdictIcon">🛡️</div>
-            <div class="verdict-text-box">
-              <span class="verdict-label-small">Credibility Rating</span>
-              <h3 id="verdictTitle" class="verdict-title">ANALYSIS</h3>
-              <p id="verdictSubtitle" class="verdict-subtitle">Detailed breakdown below</p>
-            </div>
-          </div>
-
-          <!-- Score Metrics Row -->
-          <div class="metrics-grid">
-            <div class="metric-box metric-fake">
-              <span class="metric-label">Suspicion Score</span>
-              <div class="metric-val" id="fakeScoreVal">0</div>
-              <span class="metric-hint">Flags &amp; Sensationalism</span>
-            </div>
-            <div class="metric-box metric-real">
-              <span class="metric-label">Credibility Score</span>
-              <div class="metric-val" id="realScoreVal">0</div>
-              <span class="metric-hint">Official Citations</span>
-            </div>
-            <div class="metric-box metric-balance">
-              <span class="metric-label">Signal Delta</span>
-              <div class="metric-val" id="signalDeltaVal">0</div>
-              <span class="metric-hint">Net Credibility</span>
-            </div>
-          </div>
-
-          <!-- Progress Confidence Bar -->
-          <div class="confidence-bar-wrap">
-            <div class="confidence-labels">
-              <span>Suspicious Tendency</span>
-              <span id="confidencePercentage">50% Neutral</span>
-              <span>Credible Tendency</span>
-            </div>
-            <div class="meter-track">
-              <div id="meterFill" class="meter-fill"></div>
-            </div>
-          </div>
-
-          <!-- Highlighted Text Preview -->
-          <div class="highlight-section">
-            <div class="section-title-sm">Identified Keyword Highlights:</div>
-            <div id="highlightedContent" class="highlighted-text-box"></div>
-          </div>
-
-          <!-- Reasons & Heuristic Findings List -->
-          <div class="reasons-section">
-            <div class="section-title-sm">Heuristic Insights &amp; Rationale:</div>
-            <ul id="reasonsList" class="reasons-list"></ul>
-          </div>
-
-          <!-- Clear Analysis Breakdown & Advice Card -->
-          <div class="advice-box" id="adviceBox">
-            <div class="advice-header">
-              <span id="adviceIcon" class="advice-icon">💡</span>
-              <strong id="adviceTitle">Analysis Summary &amp; Recommendations:</strong>
-            </div>
-            <p id="adviceText" class="advice-text"></p>
-          </div>
-
-          <!-- Quick Fact Check Verification Tools -->
-          <div class="factcheck-tools-row">
-            <span class="factcheck-label">Verify Externally:</span>
-            <div class="factcheck-buttons">
-              <button type="button" id="googleNewsSearchBtn" class="btn btn-sm btn-factcheck" title="Search this news headline on Google News to check reputable media reporting">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <span>Search Google News</span>
-              </button>
-              <button type="button" id="googleFactCheckBtn" class="btn btn-sm btn-factcheck" title="Search claim on Google Fact Check Explorer database">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>Google Fact Check</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Result Card Action Utilities -->
-          <div class="result-actions">
-            <button type="button" id="copyResultBtn" class="btn btn-outline" title="Copy result summary">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              <span>Copy Full Report</span>
-            </button>
-            <button type="button" id="shareResultBtn" class="btn btn-outline" title="Share analysis">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
-              <span>Share</span>
-            </button>
-          </div>
-
-          <!-- Disclaimer Note -->
-          <p class="result-disclaimer">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            This evaluation is generated algorithmically through keyword frequencies and stylistic rules. Always consult verified fact-checking institutions (such as Snopes, AP Fact Check, PolitiFact) before accepting or sharing claims.
+    <!-- ================================================================ -->
+    <!-- VIEW 1: HOME DASHBOARD                                           -->
+    <!-- ================================================================ -->
+    <section class="app-view active" id="viewDashboard">
+      <div class="dashboard-hero">
+        <div class="hero-text-wrap">
+          <span class="hero-badge">AI-Powered News &amp; Video Verification</span>
+          <h2 class="hero-title">Authenticate Information with Multi-Source Evidence</h2>
+          <p class="hero-subtitle">
+            Combines natural language processing, automated claim extraction, YouTube transcript inspection, and real-time cross-referencing against Google Fact Check Explorer, Reuters, BBC, The Hindu, and verified news archives.
           </p>
-
-        </div>
-      </section>
-
-    </div>
-
-    <!-- History Log Section -->
-    <section class="card history-card">
-      <div class="card-header history-header">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <h2>Checked Statements History</h2>
-          <span class="count-pill" id="historyCount">0</span>
-        </div>
-
-        <div class="history-controls">
-          <div class="filter-pills" id="historyFilters">
-            <button type="button" class="filter-btn active" data-filter="all">All</button>
-            <button type="button" class="filter-btn" data-filter="fake">Fake</button>
-            <button type="button" class="filter-btn" data-filter="real">Likely Real</button>
-            <button type="button" class="filter-btn" data-filter="unsure">Uncertain</button>
+          <div class="hero-actions">
+            <button type="button" class="btn btn-primary" onclick="switchView('verify', 'url')">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>Verify Article URL</span>
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="switchView('verify', 'youtube')">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+              </svg>
+              <span>Verify YouTube Video</span>
+            </button>
+            <button type="button" class="btn btn-outline" onclick="switchView('verify', 'text')">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Verify Text Statement</span>
+            </button>
           </div>
-          <button type="button" id="clearHistoryBtn" class="btn btn-sm btn-ghost" title="Clear analysis history">
-            Clear History
-          </button>
+        </div>
+
+        <div class="dashboard-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">🔍</div>
+            <div class="stat-number" id="dashTotalChecked">0</div>
+            <div class="stat-label">Statements &amp; URLs Checked</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-green">🏛️</div>
+            <div class="stat-number">12+</div>
+            <div class="stat-label">Trusted Sources Cross-Referenced</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-purple">🧠</div>
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Evidence-Based (Zero Simulated Data)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-amber">🛡️</div>
+            <div class="stat-number">SSRF</div>
+            <div class="stat-label">Enterprise-Grade URL Security</div>
+          </div>
         </div>
       </div>
 
-      <div class="history-list-wrapper">
-        <ul id="historyList" class="history-list">
-          <li class="history-empty">No statements analyzed yet in this session.</li>
-        </ul>
+      <!-- Verification Workflow Pipeline Showcase -->
+      <div class="pipeline-section">
+        <h3 class="section-title">End-to-End Verification Pipeline</h3>
+        <p class="section-desc">Every piece of submitted content moves through five rigorous verification stages:</p>
+        
+        <div class="pipeline-grid">
+          <div class="pipeline-step">
+            <div class="step-num">1</div>
+            <h4>Secure Content Ingestion</h4>
+            <p>SSRF-safe parser validates news links, YouTube videos, or direct text, extracting clean article bodies and audio transcripts.</p>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">2</div>
+            <h4>NLP Claim Extraction</h4>
+            <p>Isolates verifiable factual claims, statistical statements, and checks for headline-to-body discrepancy.</p>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">3</div>
+            <h4>Fact-Check Database Match</h4>
+            <p>Cross-references claims with Google Fact Check Explorer, Snopes, FactCheck.org, and authoritative news agencies.</p>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">4</div>
+            <h4>Temporal &amp; Outdated Check</h4>
+            <p>Inspects original publication dates to detect old historical events recirculated as modern breaking news.</p>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-num">5</div>
+            <h4>Multi-Class Verdict &amp; Evidence</h4>
+            <p>Generates REAL NEWS, POTENTIALLY FAKE, MISLEADING, OUTDATED, or UNVERIFIED verdict with clickable evidence links.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Verifications Quick Table -->
+      <div class="card recent-verifications-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <h2>Recent Verification Audits</h2>
+          </div>
+          <button type="button" class="btn btn-sm btn-ghost" onclick="switchView('history')">View Full History &rarr;</button>
+        </div>
+        <div id="dashboardRecentList" class="dashboard-recent-list">
+          <div class="history-empty">No verifications conducted yet. Click "Verify News" above to begin.</div>
+        </div>
       </div>
     </section>
 
-    <!-- Methodology & Keyword Lexicon Drawer -->
-    <section class="card lexicon-card">
-      <div class="card-header">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+    <!-- ================================================================ -->
+    <!-- VIEW 2: NEWS VERIFICATION WORKSPACE                              -->
+    <!-- ================================================================ -->
+    <section class="app-view" id="viewVerify">
+      
+      <!-- Verification Input Mode Tabs -->
+      <div class="input-mode-tabs">
+        <button type="button" class="input-tab active" id="tabUrlBtn" onclick="switchInputTab('url')">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
           </svg>
-          <h2>Detection Lexicon &amp; Dictionary</h2>
-        </div>
-        <span class="lexicon-note">Rule-based corpus</span>
+          <span>News Article URL</span>
+        </button>
+        <button type="button" class="input-tab" id="tabYouTubeBtn" onclick="switchInputTab('youtube')">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+          <span>YouTube Video Verification</span>
+        </button>
+        <button type="button" class="input-tab" id="tabTextBtn" onclick="switchInputTab('text')">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Direct Text / Headline</span>
+        </button>
       </div>
 
-      <div class="lexicon-columns">
-        <div class="lexicon-col lexicon-fake-col">
-          <div class="lexicon-col-header">
-            <span class="dot red-dot"></span>
-            <h3>Suspicious Keywords (Fake Indicator)</h3>
+      <!-- Main Workspace Grid -->
+      <div class="workspace-grid">
+
+        <!-- Left Column: Active Input Form -->
+        <section class="card input-card">
+          
+          <!-- TAB PANE 1: ARTICLE URL -->
+          <div id="paneUrl" class="input-pane active">
+            <div class="card-header">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                <h2>News Article URL Verification</h2>
+              </div>
+              <span class="supported-tag">BBC &bull; The Hindu &bull; Reuters &bull; CNN &bull; TOI</span>
+            </div>
+
+            <p class="pane-instruction">
+              Paste the web link of any published news article. Our engine securely extracts the article content, checks domain credibility, identifies central claims, and cross-references verified reporting.
+            </p>
+
+            <div class="url-input-group">
+              <div class="url-input-wrap">
+                <input type="url" id="articleUrlInput" placeholder="https://www.bbc.com/news/world-... or https://www.thehindu.com/news/..." aria-label="News Article URL">
+                <button type="button" class="btn-paste-inside" id="pasteArticleUrlBtn" title="Paste URL from clipboard">Paste</button>
+              </div>
+              <button type="button" class="btn btn-primary" id="verifyUrlBtn">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>Verify Article URL</span>
+              </button>
+            </div>
+
+            <!-- Quick URL Samples -->
+            <div class="sample-links-bar">
+              <span class="sample-links-label">Try sample news links:</span>
+              <button type="button" class="link-chip" onclick="loadSampleUrl('https://www.bbc.com/news/world')">BBC World News</button>
+              <button type="button" class="link-chip" onclick="loadSampleUrl('https://www.thehindu.com/news/national/')">The Hindu National</button>
+              <button type="button" class="link-chip" onclick="loadSampleUrl('https://www.reuters.com')">Reuters Wire</button>
+            </div>
           </div>
-          <div class="tag-cloud" id="fakeKeywordCloud"></div>
+
+          <!-- TAB PANE 2: YOUTUBE VERIFICATION -->
+          <div id="paneYouTube" class="input-pane">
+            <div class="card-header">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                  <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+                <h2>YouTube Video Fact Verification</h2>
+              </div>
+              <span class="supported-tag">Standard &bull; Shorts &bull; youtu.be</span>
+            </div>
+
+            <p class="pane-instruction">
+              Enter any YouTube video link. The platform retrieves video metadata, extracts the actual spoken transcript/captions, and audits the factual claims against verified evidence.
+            </p>
+
+            <div class="url-input-group">
+              <div class="url-input-wrap">
+                <input type="url" id="youtubeUrlInput" placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..." aria-label="YouTube Video Link">
+                <button type="button" class="btn-paste-inside" id="pasteYouTubeUrlBtn" title="Paste YouTube link from clipboard">Paste</button>
+              </div>
+              <button type="button" class="btn btn-primary" id="verifyYouTubeBtn">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Extract &amp; Verify Video</span>
+              </button>
+            </div>
+
+            <div class="youtube-notice-box">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Authentic transcripts are parsed directly via captions. If captions are disabled by the video author, you can verify specific claims in the Direct Text tab.</span>
+            </div>
+          </div>
+
+          <!-- TAB PANE 3: DIRECT TEXT & HEADLINE (Original Presets & Text Input) -->
+          <div id="paneText" class="input-pane">
+            <div class="card-header">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <h2>Headline or News Statement</h2>
+              </div>
+              <span class="counter-badge" id="charCounter">0 characters &bull; 0 words</span>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="examples-wrapper">
+              <span class="examples-label">Try quick samples:</span>
+              <div class="example-pills">
+                <button type="button" class="pill-btn pill-fake" id="exampleFakeBtn">
+                  <span class="dot"></span> Fake Alert
+                </button>
+                <button type="button" class="pill-btn pill-real" id="exampleRealBtn">
+                  <span class="dot"></span> Credible News
+                </button>
+                <button type="button" class="pill-btn pill-neutral" id="exampleNeutralBtn">
+                  <span class="dot"></span> Neutral
+                </button>
+                <button type="button" class="pill-btn pill-clickbait" id="exampleClickbaitBtn">
+                  <span class="dot"></span> Medical Clickbait
+                </button>
+              </div>
+            </div>
+
+            <!-- Clipboard Helper Toolbar -->
+            <div class="web-copy-toolbar">
+              <button type="button" id="pasteClipboardBtn" class="toolbar-btn btn-paste" title="Paste news copied from another website">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                <span>Paste Copied News</span>
+              </button>
+              <button type="button" id="fetchUrlBtn" class="toolbar-btn btn-url" title="Extract headline and inspect credibility of a news website link">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <span>Fetch from Web URL</span>
+              </button>
+              <span class="toolbar-hint">Copy news from any website and click paste to analyze</span>
+            </div>
+
+            <form id="newsForm" onsubmit="return false;">
+              <div class="textarea-container">
+                <textarea 
+                  id="newsInput" 
+                  name="news" 
+                  rows="5" 
+                  placeholder="Paste or type news copied from any website (BBC, CNN, NDTV, WhatsApp, etc.), or paste a news article URL..."
+                  aria-label="News text to check"
+                  required></textarea>
+                
+                <button type="button" id="clearTextBtn" class="clear-inside-btn" title="Clear text" aria-label="Clear text">
+                  &times;
+                </button>
+              </div>
+
+              <div id="validationMessage" class="validation-message" role="alert"></div>
+
+              <!-- Actions Controls -->
+              <div class="form-actions-row">
+                <div class="button-group">
+                  <button type="button" id="checkBtn" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <span>Check News</span>
+                    <kbd class="key-shortcut">Ctrl+Enter</kbd>
+                  </button>
+                  <button type="button" id="resetBtn" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+                      <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                      <path d="M21 3v5h-5"></path>
+                      <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                      <path d="M3 21v-5h5"></path>
+                    </svg>
+                    <span>Reset</span>
+                  </button>
+                </div>
+
+                <label class="toggle-control" title="Automatically evaluate as you type">
+                  <input type="checkbox" id="liveModeToggle">
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-text">Realtime analyze</span>
+                </label>
+              </div>
+            </form>
+          </div>
+
+          <!-- Common Processing Loading State Animation -->
+          <div id="processingCard" class="processing-overlay hidden">
+            <div class="spinner-radar">
+              <div class="radar-pulse"></div>
+              <div class="radar-scan-line"></div>
+            </div>
+            <h3 id="processingStepTitle">Verifying News Content...</h3>
+            <p id="processingStepSubtitle">Querying trusted news archives and NLP claim extraction pipeline</p>
+            <div class="processing-progress-steps">
+              <span class="step-dot active" id="pstep1">SSRF &amp; Fetch</span>
+              <span class="step-dot" id="pstep2">NLP Claims</span>
+              <span class="step-dot" id="pstep3">Fact Check Search</span>
+              <span class="step-dot" id="pstep4">AI Verdict</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Column: Quick Status / Mini Verdict Sidebar -->
+        <section class="card result-card" id="resultCard">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <h2>Analysis Verdict</h2>
+            </div>
+            <div id="verdictTimestamp" class="timestamp-badge">Ready for input</div>
+          </div>
+
+          <!-- Placeholder State -->
+          <div id="emptyResultState" class="empty-state">
+            <div class="radar-scan">
+              <div class="radar-circle"></div>
+              <div class="radar-icon">🔍</div>
+            </div>
+            <h3>Awaiting Statement or URL</h3>
+            <p>Paste a news link, YouTube video, or statement to inspect credibility metrics, claims, and verified supporting evidence.</p>
+          </div>
+
+          <!-- Active Result Quick Presentation -->
+          <div id="activeResultState" class="active-result hidden">
+            
+            <!-- Verdict Banner -->
+            <div id="verdictBanner" class="verdict-banner">
+              <div class="verdict-icon-box" id="verdictIcon">🛡️</div>
+              <div class="verdict-text-box">
+                <span class="verdict-label-small">Credibility Rating</span>
+                <h3 id="verdictTitle" class="verdict-title">ANALYSIS</h3>
+                <p id="verdictSubtitle" class="verdict-subtitle">Detailed breakdown below</p>
+              </div>
+            </div>
+
+            <!-- Score Metrics Row -->
+            <div class="metrics-grid">
+              <div class="metric-box metric-fake">
+                <span class="metric-label">Suspicion Score</span>
+                <div class="metric-val" id="fakeScoreVal">0</div>
+                <span class="metric-hint">Flags &amp; Sensationalism</span>
+              </div>
+              <div class="metric-box metric-real">
+                <span class="metric-label">Credibility Score</span>
+                <div class="metric-val" id="realScoreVal">0</div>
+                <span class="metric-hint">Official Citations</span>
+              </div>
+              <div class="metric-box metric-balance">
+                <span class="metric-label">Signal Delta</span>
+                <div class="metric-val" id="signalDeltaVal">0</div>
+                <span class="metric-hint">Net Credibility</span>
+              </div>
+            </div>
+
+            <!-- Progress Confidence Bar -->
+            <div class="confidence-bar-wrap">
+              <div class="confidence-labels">
+                <span>Suspicious Tendency</span>
+                <span id="confidencePercentage">50% Neutral</span>
+                <span>Credible Tendency</span>
+              </div>
+              <div class="meter-track">
+                <div id="meterFill" class="meter-fill"></div>
+              </div>
+            </div>
+
+            <div class="quick-view-actions">
+              <button type="button" class="btn btn-primary btn-block" onclick="switchView('results')">
+                <span>Open Full Evidence Dashboard &rarr;</span>
+              </button>
+            </div>
+
+            <!-- Highlighted Text Preview -->
+            <div class="highlight-section">
+              <div class="section-title-sm">Identified Keyword Highlights:</div>
+              <div id="highlightedContent" class="highlighted-text-box"></div>
+            </div>
+
+            <!-- Reasons & Findings List -->
+            <div class="reasons-section">
+              <div class="section-title-sm">Heuristic Insights &amp; Rationale:</div>
+              <ul id="reasonsList" class="reasons-list"></ul>
+            </div>
+
+            <!-- Clear Analysis Advice Card -->
+            <div class="advice-box" id="adviceBox">
+              <div class="advice-header">
+                <span id="adviceIcon" class="advice-icon">💡</span>
+                <strong id="adviceTitle">Analysis Summary &amp; Recommendations:</strong>
+              </div>
+              <p id="adviceText" class="advice-text"></p>
+            </div>
+
+            <!-- External Verification Tools -->
+            <div class="factcheck-tools-row">
+              <span class="factcheck-label">Verify Externally:</span>
+              <div class="factcheck-buttons">
+                <button type="button" id="googleNewsSearchBtn" class="btn btn-sm btn-factcheck" title="Search headline on Google News">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <span>Google News</span>
+                </button>
+                <button type="button" id="googleFactCheckBtn" class="btn btn-sm btn-factcheck" title="Search claim on Google Fact Check Explorer">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span>Fact Check Explorer</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="result-actions">
+              <button type="button" id="copyResultBtn" class="btn btn-outline" title="Copy report">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy Full Report</span>
+              </button>
+              <button type="button" id="shareResultBtn" class="btn btn-outline" title="Share analysis">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <span>Share</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- VIEW 3: FULL EVIDENCE DASHBOARD                                  -->
+    <!-- ================================================================ -->
+    <section class="app-view" id="viewResults">
+      <div id="fullEvidenceEmpty" class="card empty-state">
+        <div class="radar-scan">
+          <div class="radar-circle"></div>
+          <div class="radar-icon">📊</div>
+        </div>
+        <h3>No Analysis Selected</h3>
+        <p>Analyze an article URL, YouTube video, or news text in the Verification tab, or select an item from History to inspect the full Evidence Dashboard.</p>
+        <button type="button" class="btn btn-primary" onclick="switchView('verify')">Go to Verification Tab</button>
+      </div>
+
+      <div id="fullEvidenceContent" class="evidence-dashboard-container hidden">
+        
+        <!-- Header Card: Verdict, Confidence, and Source Attribution -->
+        <div class="card evidence-header-card">
+          <div class="evidence-top-row">
+            <div class="verdict-badge-large" id="evClassificationBadge">REAL NEWS</div>
+            <div class="confidence-gauge-box">
+              <span class="confidence-label">Confidence Score:</span>
+              <strong class="confidence-value" id="evConfidenceVal">85%</strong>
+              <span class="confidence-disclaimer">(Evidence strength score, not absolute certainty)</span>
+            </div>
+            <div class="model-tag-pill" id="evModelUsed">AI Verification Engine</div>
+          </div>
+
+          <!-- Outdated Alert Box (Hidden unless flagged) -->
+          <div id="evOutdatedAlert" class="outdated-alert-box hidden">
+            <span class="outdated-icon">⏰</span>
+            <div>
+              <strong>Temporal Discrepancy Detected (Outdated Information):</strong>
+              <p id="evOutdatedText">This story reports events from several years ago being recirculated as current news.</p>
+            </div>
+          </div>
+
+          <div class="headline-container">
+            <span class="metadata-eyebrow" id="evSourceMeta">Source: Direct Input</span>
+            <h2 id="evHeadline" class="evidence-main-headline">News Headline Here</h2>
+            <div class="meta-tags-row" id="evMetaRow">
+              <span class="meta-tag" id="evDateMeta">Published: Recent</span>
+              <span class="meta-tag" id="evWordCountMeta">Words: 0</span>
+              <a href="#" target="_blank" rel="noopener" class="meta-tag meta-link" id="evOriginalLink" style="display:none;">Open Original Article &nearr;</a>
+            </div>
+          </div>
+
+          <!-- Summary / Content Excerpt -->
+          <div class="evidence-summary-box">
+            <div class="section-title-sm">Extracted Content &amp; Excerpt:</div>
+            <p id="evSummaryText" class="evidence-summary-text"></p>
+          </div>
         </div>
 
-        <div class="lexicon-col lexicon-real-col">
-          <div class="lexicon-col-header">
-            <span class="dot green-dot"></span>
-            <h3>Credible Keywords (Real Indicator)</h3>
+        <!-- Factual Claims Identified -->
+        <div class="card evidence-claims-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+              <h3>Key Factual Assertions &amp; Claims Extracted by NLP</h3>
+            </div>
+            <span class="badge-tag">Claim Extraction Engine</span>
           </div>
-          <div class="tag-cloud" id="realKeywordCloud"></div>
+          <div id="evClaimsList" class="claims-list-grid"></div>
+        </div>
+
+        <!-- Supporting vs Contradicting Evidence Grid -->
+        <div class="evidence-comparison-grid">
+          
+          <!-- Supporting Evidence Column -->
+          <div class="card evidence-col supporting-col">
+            <div class="col-header green-header">
+              <span class="col-icon">✅</span>
+              <div>
+                <h3>Supporting Evidence &amp; Corroborations</h3>
+                <span class="col-subtitle">Reports and confirmations from trusted news agencies</span>
+              </div>
+            </div>
+            <div id="evSupportingList" class="evidence-items-list">
+              <div class="evidence-empty">No direct supporting reports identified in indexed archives.</div>
+            </div>
+          </div>
+
+          <!-- Contradicting Evidence Column -->
+          <div class="card evidence-col contradicting-col">
+            <div class="col-header red-header">
+              <span class="col-icon">🚨</span>
+              <div>
+                <h3>Contradicting Evidence &amp; Fact-Checks</h3>
+                <span class="col-subtitle">Independent debunks, rebuttals, and conflicting facts</span>
+              </div>
+            </div>
+            <div id="evContradictingList" class="evidence-items-list">
+              <div class="evidence-empty">No conflicting debunks or counter-evidence found in verified registers.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trusted Sources Checked & Rationale -->
+        <div class="card evidence-details-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <h3>Audited Repositories &amp; Trusted Sources Checked</h3>
+            </div>
+          </div>
+          <div id="evTrustedSourcesBadges" class="sources-badges-row"></div>
+
+          <div class="ai-rationale-section">
+            <div class="section-title-sm">Comprehensive AI Verification Rationale:</div>
+            <p id="evExplanationText" class="ai-explanation-text"></p>
+          </div>
+
+          <div class="evidence-actions-row">
+            <button type="button" class="btn btn-primary" id="evCopyBtn">Copy Complete Evidence Dossier</button>
+            <button type="button" class="btn btn-secondary" onclick="switchView('verify')">Verify Another Article</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- VIEW 4: VERIFICATION HISTORY (SQLite DB)                         -->
+    <!-- ================================================================ -->
+    <section class="app-view" id="viewHistory">
+      <div class="card history-card">
+        <div class="card-header history-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <h2>Verification History Log (Database)</h2>
+            <span class="count-pill" id="historyDatabaseCount">0</span>
+          </div>
+
+          <div class="history-controls">
+            <div class="search-input-wrap">
+              <input type="text" id="historySearchInput" placeholder="Search past verifications..." aria-label="Search History">
+            </div>
+            <div class="filter-pills" id="dbHistoryFilters">
+              <button type="button" class="filter-btn active" data-filter="all">All</button>
+              <button type="button" class="filter-btn" data-filter="REAL NEWS">Real News</button>
+              <button type="button" class="filter-btn" data-filter="POTENTIALLY FAKE">Fake</button>
+              <button type="button" class="filter-btn" data-filter="MISLEADING">Misleading</button>
+              <button type="button" class="filter-btn" data-filter="OUTDATED INFORMATION">Outdated</button>
+              <button type="button" class="filter-btn" data-filter="UNVERIFIED">Unverified</button>
+            </div>
+            <button type="button" id="clearAllDbHistoryBtn" class="btn btn-sm btn-ghost" title="Clear all history">
+              Clear All History
+            </button>
+          </div>
+        </div>
+
+        <div class="history-table-wrapper">
+          <table class="history-table" id="historyTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Headline / Content</th>
+                <th>Classification</th>
+                <th>Confidence</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="6" class="history-empty">Loading verification records from database...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- VIEW 5: TRUSTED SOURCES DIRECTORY                                -->
+    <!-- ================================================================ -->
+    <section class="app-view" id="viewSources">
+      <div class="card sources-overview-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <h2>Audited Trusted Sources &amp; Fact-Checking Registry</h2>
+          </div>
+          <span class="badge-tag">Transparent Standards</span>
+        </div>
+        <p class="sources-intro-text">
+          Our verification engine cross-references articles and claims with internationally recognized non-partisan fact-checkers, accredited wire services, and peer-reviewed scientific databases. We never classify news as fake merely because it hasn't yet appeared in mainstream headlines.
+        </p>
+
+        <h3 class="sources-group-title">Accredited Fact-Checking Organizations</h3>
+        <div class="sources-grid">
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>Google Fact Check Explorer</h4>
+              <span class="source-status active">Active Integration</span>
+            </div>
+            <p>Aggregates structured claim reviews from certified members of the International Fact-Checking Network (IFCN).</p>
+            <a href="https://toolbox.google.com/factcheck/explorer" target="_blank" rel="noopener" class="source-link">Visit Portal &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>Snopes</h4>
+              <span class="source-status active">Active Integration</span>
+            </div>
+            <p>One of the oldest independent investigative fact-checking organizations debunking urban legends, political spin, and viral hoaxes.</p>
+            <a href="https://www.snopes.com" target="_blank" rel="noopener" class="source-link">Visit Snopes &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>FactCheck.org</h4>
+              <span class="source-status active">Active Integration</span>
+            </div>
+            <p>A non-partisan project of the Annenberg Public Policy Center monitoring the factual accuracy of viral public claims.</p>
+            <a href="https://www.factcheck.org" target="_blank" rel="noopener" class="source-link">Visit FactCheck.org &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>PIB Fact Check</h4>
+              <span class="source-status active">Active Integration</span>
+            </div>
+            <p>Government of India official fact-checking agency identifying disinformation relating to public policies and circulars.</p>
+            <a href="https://pib.gov.in/factcheck" target="_blank" rel="noopener" class="source-link">Visit PIB Fact Check &nearr;</a>
+          </div>
+        </div>
+
+        <h3 class="sources-group-title">Established Global &amp; National News Agencies</h3>
+        <div class="sources-grid">
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>Reuters</h4>
+              <span class="source-tag">International Wire</span>
+            </div>
+            <p>Global multi-bureau news agency upholding rigorous Thomson Reuters Trust Principles of neutrality and corroboration.</p>
+            <a href="https://www.reuters.com" target="_blank" rel="noopener" class="source-link">reuters.com &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>Associated Press (AP)</h4>
+              <span class="source-tag">International Wire</span>
+            </div>
+            <p>Independent global news collective providing vetted reporting and dedicated investigative AP Fact Check journalism.</p>
+            <a href="https://apnews.com" target="_blank" rel="noopener" class="source-link">apnews.com &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>BBC News</h4>
+              <span class="source-tag">Public Broadcaster</span>
+            </div>
+            <p>British Broadcasting Corporation international service and BBC Verify dedicated to forensic digital verification.</p>
+            <a href="https://www.bbc.com/news" target="_blank" rel="noopener" class="source-link">bbc.com/news &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>The Hindu</h4>
+              <span class="source-tag">National Daily</span>
+            </div>
+            <p>Renowned Indian English-language daily newspaper with high standards of institutional attribution and investigative coverage.</p>
+            <a href="https://www.thehindu.com" target="_blank" rel="noopener" class="source-link">thehindu.com &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>Times of India</h4>
+              <span class="source-tag">National Daily</span>
+            </div>
+            <p>India's largest circulation broadsheet covering national breaking news, government circulars, and Times Fact Check.</p>
+            <a href="https://timesofindia.indiatimes.com" target="_blank" rel="noopener" class="source-link">timesofindia.com &nearr;</a>
+          </div>
+          <div class="source-item-card">
+            <div class="source-top">
+              <h4>World Health Organization (WHO)</h4>
+              <span class="source-tag">Public Health</span>
+            </div>
+            <p>Specialized United Nations agency providing primary epidemiological data, clinical research guidelines, and health mythbusters.</p>
+            <a href="https://www.who.int" target="_blank" rel="noopener" class="source-link">who.int &nearr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- VIEW 6: ABOUT & SYSTEM METHODOLOGY                               -->
+    <!-- ================================================================ -->
+    <section class="app-view" id="viewAbout">
+      <div class="card about-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <h2>About the Veritas AI Verification Engine</h2>
+          </div>
+          <span class="version-tag">Architecture &amp; Ethics</span>
+        </div>
+
+        <div class="about-content">
+          <h3>1. Mission Statement</h3>
+          <p>
+            Misinformation erodes democratic institutions and public health. Veritas AI was built to empower researchers, journalists, and citizens to rapidly interrogate news articles, YouTube transcripts, and viral social media forwards against verifiable evidence without relying on black-box guesswork.
+          </p>
+
+          <h3>2. Core Principles of Verification</h3>
+          <ul>
+            <li><strong>Zero Simulated Results:</strong> Every evidence link, quotation, and fact-check card corresponds to a real, accessible database record or live article.</li>
+            <li><strong>Absence of Evidence is Not Evidence of Absence:</strong> When a claim cannot be verified because no outlet has yet reported on it, our system labels it <code>UNVERIFIED</code>, strictly avoiding false "Fake" classifications.</li>
+            <li><strong>Temporal Auditing:</strong> The engine inspects publication dates to prevent recycled historical events from deceiving readers as fresh breaking developments.</li>
+            <li><strong>Headline Divergence Detection:</strong> NLP measures the semantic alignment between a headline and the article body to flag deceptive clickbait.</li>
+          </ul>
+
+          <h3>3. Architecture Stack</h3>
+          <div class="tech-stack-pills">
+            <span class="tech-pill">Python 3.14</span>
+            <span class="tech-pill">FastAPI</span>
+            <span class="tech-pill">SQLite &amp; SQLAlchemy</span>
+            <span class="tech-pill">Google Fact Check API</span>
+            <span class="tech-pill">YouTube Transcript API</span>
+            <span class="tech-pill">BeautifulSoup4</span>
+            <span class="tech-pill">Natural Language Processing</span>
+            <span class="tech-pill">SSRF Security Shield</span>
+            <span class="tech-pill">Vanilla JS (Zero Heavy Frameworks)</span>
+          </div>
+
+          <h3>4. Lexicon &amp; Rule Engine Corpus</h3>
+          <p>For instant offline auditing, the engine integrates curated linguistic dictionaries:</p>
+          <div class="lexicon-columns">
+            <div class="lexicon-col lexicon-fake-col">
+              <div class="lexicon-col-header">
+                <span class="dot red-dot"></span>
+                <h4>Suspicious Keywords (Fake Indicator)</h4>
+              </div>
+              <div class="tag-cloud" id="fakeKeywordCloud"></div>
+            </div>
+
+            <div class="lexicon-col lexicon-real-col">
+              <div class="lexicon-col-header">
+                <span class="dot green-dot"></span>
+                <h4>Credible Keywords (Real Indicator)</h4>
+              </div>
+              <div class="tag-cloud" id="realKeywordCloud"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -404,13 +978,15 @@
   <!-- Global Footer -->
   <footer class="app-footer">
     <div class="footer-container">
-      <p>Fake News Detector &bull; Full-stack Client &amp; Python Standalone Application</p>
+      <p>Veritas AI &bull; Advanced AI-Powered Fake News Detection &amp; Fact Verification System</p>
       <div class="footer-links">
-        <span>Developed with Vanilla JS &amp; Modern CSS</span>
+        <span>Powered by Python FastAPI, NLP &amp; Real-Time Fact Check APIs</span>
         <span>&bull;</span>
-        <span>Hosted seamlessly on Vercel</span>
+        <a href="javascript:void(0)" onclick="switchView('sources')">Trusted Sources Registry</a>
         <span>&bull;</span>
-        <a href="#newsInput" class="back-to-top">Back to top &uarr;</a>
+        <a href="javascript:void(0)" onclick="switchView('about')">System Architecture</a>
+        <span>&bull;</span>
+        <a href="#brandLogoBtn" class="back-to-top">Back to top &uarr;</a>
       </div>
     </div>
   </footer>
