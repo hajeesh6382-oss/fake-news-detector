@@ -51,7 +51,12 @@ async def run_verification_pipeline(
     url: Optional[str] = None,
     text: Optional[str] = None,
     headline_input: Optional[str] = None,
-    task_id: Optional[str] = None
+    task_id: Optional[str] = None,
+    publisher_override: Optional[str] = None,
+    domain_override: Optional[str] = None,
+    author_override: Optional[str] = None,
+    source_url_override: Optional[str] = None,
+    is_trusted_override: Optional[bool] = None
 ) -> VerdictResult:
     """
     Executes the 8-stage verification pipeline with real cross-platform search,
@@ -74,17 +79,17 @@ async def run_verification_pipeline(
         if url:
             article = extract_article_content(url)
         else:
-            # Direct text input
+            # Direct text input or YouTube video
             raw_text = (text or "").strip()
             if len(raw_text) < 5 or (len(raw_text.split()) == 1 and not raw_text.startswith("http")):
                 raise ValueError(f"'{raw_text}' is too brief to extract factual assertions.")
             headline = headline_input or (raw_text if len(raw_text) <= 120 else raw_text[:100])
             article = ExtractedArticle(
-                url="",
-                domain="direct-input",
-                publisher="Direct Statement",
+                url=source_url_override or "",
+                domain=domain_override or "direct-input",
+                publisher=publisher_override or "Direct Statement",
                 headline=headline,
-                author="User",
+                author=author_override or "User",
                 published_date=None,
                 text=raw_text,
                 summary=raw_text[:400],
@@ -143,13 +148,15 @@ async def run_verification_pipeline(
             platform_comparison=platform_comparison,
             summary=summary,
             gemini_eval=gemini_eval,
-            task_id=task_id
+            task_id=task_id,
+            is_trusted_override=is_trusted_override
         )
 
         # Persist to Database
         try:
+            input_type_val = "youtube" if (source_url_override and "youtube" in source_url_override) else ("url" if url else "text")
             save_verification(
-                input_type="url" if url else "text",
+                input_type=input_type_val,
                 headline=article.headline,
                 summary=article.summary,
                 classification=verdict_res.verdict,

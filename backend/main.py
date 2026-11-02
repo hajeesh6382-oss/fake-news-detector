@@ -83,13 +83,21 @@ async def verify_youtube_endpoint(req: YouTubeVerificationRequest):
         raise HTTPException(status_code=400, detail="YouTube URL is required")
 
     yt_data = extract_youtube_content(req.url)
-    claim_text = yt_data.get("transcript") or yt_data.get("title", "")
-    headline = yt_data.get("title", "YouTube Video")
+    claim_text = yt_data.get("transcript") or yt_data.get("clean_headline") or yt_data.get("title", "")
+    headline = yt_data.get("clean_headline") or yt_data.get("title", "YouTube Video")
+    publisher = yt_data.get("publisher", "YouTube")
+    domain = yt_data.get("domain", "youtube.com")
+    is_trusted = yt_data.get("is_trusted", False)
 
-    # Run verification pipeline on spoken transcript / title
+    # Run verification pipeline on spoken transcript / title with channel authority
     verdict_res = await run_verification_pipeline(
-        text=claim_text[:2000],
-        headline_input=headline
+        text=claim_text[:2500],
+        headline_input=headline,
+        publisher_override=publisher,
+        domain_override=domain,
+        author_override=yt_data.get("author", "YouTube Creator"),
+        source_url_override=req.url,
+        is_trusted_override=is_trusted
     )
 
     res_dict = verdict_res.dict()
@@ -97,8 +105,12 @@ async def verify_youtube_endpoint(req: YouTubeVerificationRequest):
         "input_type": "youtube",
         "video_id": yt_data.get("video_id"),
         "author": yt_data.get("author", "YouTube Creator"),
+        "publisher": publisher,
+        "domain": domain,
         "thumbnail_url": yt_data.get("thumbnail_url"),
-        "has_transcript": yt_data.get("has_transcript", False)
+        "has_transcript": yt_data.get("has_transcript", False),
+        "headline": yt_data.get("title", headline),
+        "clean_headline": headline
     })
     return res_dict
 

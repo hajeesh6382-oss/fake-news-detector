@@ -17,7 +17,8 @@ def generate_verdict(
     platform_comparison: List[PlatformComparisonItem],
     summary: VerificationSummary,
     gemini_eval: Optional[Dict[str, Any]] = None,
-    task_id: Optional[str] = None
+    task_id: Optional[str] = None,
+    is_trusted_override: Optional[bool] = None
 ) -> VerdictResult:
     """
     Synthesizes all evidence, domain trust metrics, and Gemini evaluations
@@ -65,7 +66,16 @@ def generate_verdict(
         )
 
     # 2. Check Domain Authority & Independent Corroboration
-    is_trusted_publisher = article.domain in config.ALL_TRUSTED_DOMAINS
+    is_trusted_publisher = (
+        bool(is_trusted_override) or
+        article.domain in config.ALL_TRUSTED_DOMAINS or
+        any(td in (article.publisher or "").lower() for td in [
+            "bbc", "reuters", "associated press", "the hindu", "cnn", "ndtv",
+            "indian express", "guardian", "dw news", "france 24", "al jazeera",
+            "bloomberg", "sky news", "abc news", "cbs news", "nbc news",
+            "times of india", "hindustan times", "india today", "ani news", "wion"
+        ])
+    )
     is_suspicious_domain = any(article.domain.endswith(tld) for tld in config.SUSPICIOUS_TLDS)
 
     # Count independent external corroborating sources (excluding primary publisher and syndicated duplicates)

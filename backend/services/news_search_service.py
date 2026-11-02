@@ -19,12 +19,21 @@ CACHE_TTL = 3600  # 1 hour
 
 def get_clean_search_terms(headline: str, entities: List[str] = None) -> str:
     """Extracts high-signal keywords and entity names for search queries."""
-    clean = re.sub(r"[^\w\s-]", " ", headline)
+    # Strip channel brand suffixes and noisy video tags
+    clean = re.sub(
+        r"\s*[-|–—]\s*(?:BBC News|BBC|CNN|Reuters|The Hindu|NDTV|Times Now|Associated Press|Sky News|France 24|DW News|India Today|Hindustan Times|The Guardian|Al Jazeera|ABC News|CBS News|NBC News|Bloomberg|WION|ANI).*$",
+        "",
+        headline,
+        flags=re.I
+    )
+    clean = re.sub(r"\[.*?\]|\(.*?\)", "", clean)
+    clean = re.sub(r"[^\w\s-]", " ", clean)
     words = clean.split()
     stopwords = {
         "a", "an", "the", "in", "on", "at", "to", "for", "of", "with", "by", "from",
         "and", "or", "is", "are", "was", "were", "be", "been", "has", "have", "had",
-        "say", "says", "said", "after", "over", "under", "into", "live", "follow", "updates", "breaking"
+        "say", "says", "said", "after", "over", "under", "into", "live", "follow", "updates", "breaking",
+        "video", "official", "watch", "remaster", "full", "youtube"
     }
     keywords = [w for w in words if w.lower() not in stopwords and len(w) > 2]
     
@@ -158,7 +167,7 @@ async def search_cross_platform_news(
     headers = {"User-Agent": config.USER_AGENT}
     all_results: List[Dict[str, Any]] = []
 
-    async with httpx.AsyncClient(headers=headers, timeout=3.5) as client:
+    async with httpx.AsyncClient(headers=headers, timeout=6.5) as client:
         # Launch parallel search tasks across providers
         tasks = [
             fetch_google_news_rss(client, search_terms),
