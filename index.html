@@ -467,10 +467,11 @@
             <h3 id="processingStepTitle">Verifying News Content...</h3>
             <p id="processingStepSubtitle">Querying trusted news archives and NLP claim extraction pipeline</p>
             <div class="processing-progress-steps">
-              <span class="step-dot active" id="pstep1">SSRF &amp; Fetch</span>
-              <span class="step-dot" id="pstep2">NLP Claims</span>
-              <span class="step-dot" id="pstep3">Fact Check Search</span>
-              <span class="step-dot" id="pstep4">AI Verdict</span>
+              <span class="step-dot active" id="pstep1">Reading article</span>
+              <span class="step-dot" id="pstep2">Searching other platforms</span>
+              <span class="step-dot" id="pstep3">Comparing</span>
+              <span class="step-dot" id="pstep4">Checking fact-checkers</span>
+              <span class="step-dot" id="pstep5">Finishing</span>
             </div>
           </div>
         </section>
@@ -497,9 +498,30 @@
             <p>Paste a news link, YouTube video, or statement to inspect credibility metrics, claims, and verified supporting evidence.</p>
           </div>
 
+          <!-- Error State Card -->
+          <div id="errorResultState" class="error-result-state hidden">
+            <div class="error-icon-box">⚠️</div>
+            <h3 id="errorStateTitle" class="error-title">Verification Notice</h3>
+            <p id="errorStateReason" class="error-reason">Unable to process input.</p>
+            <div class="error-suggestion-box">
+              <strong>Suggestion:</strong>
+              <p id="errorStateSuggestion">Please paste a complete web URL starting with https://.</p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="clearActiveInputs()">Clear &amp; Try Again</button>
+          </div>
+
           <!-- Active Result Quick Presentation -->
           <div id="activeResultState" class="active-result hidden">
             
+            <!-- Extracted Article Header -->
+            <div class="result-meta-header" id="resultMetaHeader">
+              <div class="meta-tags">
+                <span class="publisher-pill" id="resultPublisher">BBC News</span>
+                <span class="date-pill" id="resultDate">Recent</span>
+              </div>
+              <h3 class="extracted-headline-title" id="resultHeadline">News Article</h3>
+            </div>
+
             <!-- Verdict Banner -->
             <div id="verdictBanner" class="verdict-banner">
               <div class="verdict-icon-box" id="verdictIcon">🛡️</div>
@@ -532,6 +554,7 @@
             <!-- Progress Confidence Bar -->
             <div class="confidence-bar-wrap">
               <div class="confidence-labels">
+                
                 <span>Suspicious Tendency</span>
                 <span id="confidencePercentage">50% Neutral</span>
                 <span>Credible Tendency</span>
@@ -566,6 +589,49 @@
                 <strong id="adviceTitle">Analysis Summary &amp; Recommendations:</strong>
               </div>
               <p id="adviceText" class="advice-text"></p>
+            </div>
+
+            <!-- Why This Verdict Card -->
+            <div class="why-verdict-box" id="whyVerdictCard">
+              <div class="section-title-sm">Why this verdict:</div>
+              <p id="whyVerdictText" class="why-verdict-text"></p>
+            </div>
+
+            <!-- Warnings List Card -->
+            <div class="warnings-box hidden" id="warningsCard">
+              <div class="section-title-sm warning-header">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <span>Warnings &amp; Advisory Flags</span>
+              </div>
+              <ul id="warningsList" class="warnings-list"></ul>
+            </div>
+
+            <!-- Cross-Platform Matching Sources Table -->
+            <div class="matching-sources-box" id="matchingSourcesCard">
+              <div class="section-title-sm">Cross-Platform Matching Sources:</div>
+              <div class="table-container-sm">
+                <table class="matching-table" id="matchingSourcesTable">
+                  <thead>
+                    <tr>
+                      <th>Platform</th>
+                      <th>Coverage / Headline</th>
+                      <th>Similarity</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="matchingSourcesTbody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Automated Disclaimer Note -->
+            <div class="disclaimer-badge">
+              <span>⚠️ Automated estimate, confirm with official sources</span>
             </div>
 
             <!-- External Verification Tools -->

@@ -1,3 +1,4 @@
+
 """
 Run script for Advanced AI-Powered Fake News Detection System.
 Launches the FastAPI backend and serves the interactive frontend on http://localhost:8000.

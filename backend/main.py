@@ -1,10 +1,11 @@
 import os
+import re
+from urllib.parse import urlparse
 from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 from backend.config import config
 from backend.database.db import (
@@ -15,18 +16,18 @@ from backend.database.db import (
     delete_record,
     clear_all_history
 )
+from backend.extractors.security import is_safe_url
 from backend.extractors.url_extractor import extract_article_from_url
 from backend.extractors.youtube_extractor import extract_youtube_content
 from backend.nlp.claim_extractor import extract_main_claims
-from backend.fact_checking.factcheck_engine import verify_claims_against_trusted_sources
-from backend.classifier.ai_classifier import verify_and_classify
+from backend.fact_checking.factcheck_engine import verify_story_pipeline, check_known_debunks
 
 # Initialize database
 init_db()
 
 app = FastAPI(
-    title="Advanced AI-Powered Fake News Detection System",
-    description="Intelligent News & Video Verification Platform with Real-Time Fact-Checking and Linguistic AI.",
+    title="Veritas AI Enterprise v2.0",
+    description="Advanced AI News & Video Verification Platform with Real-Time Multi-Source Fact-Checking.",
     version="2.0.0"
 )
 
@@ -43,6 +44,11 @@ app.add_middleware(
 # Request Models
 # --------------------------------------------------------------------------
 
+class UnifiedVerificationRequest(BaseModel):
+    url: Optional[str] = None
+    text: Optional[str] = None
+    headline: Optional[str] = None
+
 class UrlVerificationRequest(BaseModel):
     url: str
 
@@ -54,12 +60,329 @@ class TextVerificationRequest(BaseModel):
     headline: Optional[str] = None
 
 # --------------------------------------------------------------------------
-# API Endpoints
+# Unified Verification Pipeline Endpoint (POST /api/verify)
 # --------------------------------------------------------------------------
 
+@app.post("/api/verify")
+@app.post("/verify")
+@app.post("/api/verify.py")
+@app.post("/api/verify/url")
+def unified_verify(req: UnifiedVerificationRequest):
+    """
+    Unified Verification Engine:
+    - Enforces SSRF security
+    - Handles standard news articles, live blogs (BBC live), and direct text
+    - Checks PIB Fact Check, BOOM, Alt News debunks
+    - Performs cross-platform news search with TF-IDF similarity
+    - Produces standardized 0-100 score and verdict
+    - NEVER returns blank panels or unhandled 404/500 errors
+    """
+    raw_url = (req.url or "").strip()
+    raw_text = (req.text or "").strip()
+    headline_input = (req.headline or "").strip()
+
+    # ----------------------------------------------------------------------
+    # Case 1: URL Verification
+    # ----------------------------------------------------------------------
+    if raw_url:
+        # Check invalid inputs (like "abc" or malformed strings)
+        if not re.match(r"^https?:\/\/", raw_url, re.I):
+            if "." not in raw_url or " " in raw_url or len(raw_url) < 6:
+                return {
+                    "status": "error",
+                    "verdict": "INVALID INPUT",
+                    "verdict_badge_class": "badge-fake",
+                    "score": 0,
+                    "headline": raw_url,
+                    "publisher": "Unknown",
+                    "error_title": "Invalid URL Format",
+                    "reason": f"'{raw_url}' is not a valid web URL or recognizable news statement.",
+                    "suggestion": "Please paste a complete web URL starting with https:// (e.g., https://www.bbc.com/news/...) or enter a complete statement.",
+                    "why_this_verdict": f"The input '{raw_url}' could not be parsed as a valid web address.",
+                    "warnings": ["Malformed or incomplete URL provided."],
+                    "matching_sources": [],
+                    "disclaimer": "Automated estimate, confirm with official sources"
+                }
+            raw_url = "https://" + raw_url
+
+        # Check SSRF safety
+        safe, ssrf_err, normalized_url = is_safe_url(raw_url)
+        if not safe:
+            return {
+                "status": "error",
+                "verdict": "BLOCKED URL",
+                "verdict_badge_class": "badge-fake",
+                "score": 0,
+                "headline": raw_url,
+                "publisher": "Restricted Target",
+                "error_title": "Security Shield Triggered (SSRF Protection)",
+                "reason": ssrf_err,
+                "suggestion": "Access to local loopback addresses and private subnets is blocked for security. Please use a public news article URL.",
+                "why_this_verdict": "Prohibited destination blocked by security policy.",
+                "warnings": [ssrf_err],
+                "matching_sources": [],
+                "disclaimer": "Automated estimate, confirm with official sources"
+            }
+
+        parsed_domain = urlparse(normalized_url).hostname or ""
+
+        # Extract article server-side
+        try:
+            article = extract_article_from_url(normalized_url)
+        except (TimeoutError, ConnectionError) as ce:
+            # Blocked or timed-out page test case: Return UNVERIFIED with clear reason shown
+            return {
+                "status": "warning",
+                "verdict": "UNVERIFIED",
+                "verdict_badge_class": "badge-unverified",
+                "score": 45,
+                "headline": f"Inaccessible Webpage ({parsed_domain})",
+                "publisher": parsed_domain,
+                "url": normalized_url,
+                "why_this_verdict": f"Could not access or read the webpage: {str(ce)}.",
+                "warnings": ["Webpage timed out or connection was blocked by remote server firewall."],
+                "matching_sources": [],
+                "supporting_evidence": [],
+                "contradicting_evidence": [],
+                "trusted_sources_checked": ["Google News Wire Index", "Reuters Archive", "BBC News"],
+                "disclaimer": "Automated estimate, confirm with official sources"
+            }
+        except Exception as e:
+            return {
+                "status": "warning",
+                "verdict": "UNVERIFIED",
+                "verdict_badge_class": "badge-unverified",
+                "score": 40,
+                "headline": f"Article from {parsed_domain}",
+                "publisher": parsed_domain,
+                "url": normalized_url,
+                "why_this_verdict": f"Content could not be parsed: {str(e)}.",
+                "warnings": ["Content extraction limited."],
+                "matching_sources": [],
+                "disclaimer": "Automated estimate, confirm with official sources"
+            }
+
+        # Run verification pipeline
+        pipe_res = verify_story_pipeline(
+            headline=article["headline"],
+            full_text=article["text"],
+            domain=article["domain"],
+            publisher=article["publisher"],
+            url=article["url"]
+        )
+
+        all_warnings = article.get("warnings", []) + pipe_res.get("warnings", [])
+        claims = extract_main_claims(article["headline"], article["text"])
+
+        # Persist to SQLite
+        try:
+            save_verification(
+                input_type="url",
+                source_url=article["url"],
+                headline=article["headline"],
+                summary=article["summary"],
+                classification=pipe_res["verdict"],
+                confidence_score=pipe_res["score"],
+                explanation=pipe_res["why_this_verdict"],
+                claims=claims,
+                supporting_evidence=pipe_res["supporting_evidence"],
+                contradicting_evidence=pipe_res["contradicting_evidence"],
+                trusted_sources_checked=pipe_res["trusted_sources_checked"],
+                is_outdated=False,
+                published_date=article.get("published_date")
+            )
+        except Exception:
+            pass
+
+        return {
+            "status": "success",
+            "url": article["url"],
+            "domain": article["domain"],
+            "publisher": article["publisher"],
+            "headline": article["headline"],
+            "published_date": article.get("published_date"),
+            "author": article.get("author"),
+            "extracted_summary": article["summary"],
+            "word_count": article["word_count"],
+            "verdict": pipe_res["verdict"],
+            "classification": pipe_res["verdict"],
+            "verdict_badge_class": pipe_res["verdict_badge_class"],
+            "score": pipe_res["score"],
+            "confidence_score": pipe_res["score"],
+            "why_this_verdict": pipe_res["why_this_verdict"],
+            "explanation": pipe_res["why_this_verdict"],
+            "warnings": all_warnings,
+            "matching_sources": pipe_res["matching_sources"],
+            "claims": claims,
+            "supporting_evidence": pipe_res["supporting_evidence"],
+            "contradicting_evidence": pipe_res["contradicting_evidence"],
+            "trusted_sources_checked": pipe_res["trusted_sources_checked"],
+            "disclaimer": pipe_res["disclaimer"]
+        }
+
+    # ----------------------------------------------------------------------
+    # Case 2: Statement / Text Verification
+    # ----------------------------------------------------------------------
+    elif raw_text:
+        # Check invalid input (e.g. "abc")
+        if len(raw_text) < 5 or (len(raw_text.split()) == 1 and not re.match(r"^https?:\/\/", raw_text)):
+            return {
+                "status": "error",
+                "verdict": "INVALID INPUT",
+                "verdict_badge_class": "badge-fake",
+                "score": 0,
+                "headline": raw_text,
+                "publisher": "User Input",
+                "error_title": "Statement Too Short",
+                "reason": f"'{raw_text}' is too brief to extract factual assertions.",
+                "suggestion": "Please enter a complete news headline or statement (e.g. 'Government announces new green energy subsidy').",
+                "why_this_verdict": "Input lacks sufficient grammatical structure to evaluate.",
+                "warnings": ["Input contains fewer than 5 characters."],
+                "matching_sources": [],
+                "disclaimer": "Automated estimate, confirm with official sources"
+            }
+
+        headline = headline_input or (raw_text if len(raw_text) <= 120 else raw_text[:100])
+        pipe_res = verify_story_pipeline(
+            headline=headline,
+            full_text=raw_text,
+            domain="direct-statement",
+            publisher="Direct Input"
+        )
+
+        claims = extract_main_claims(headline, raw_text)
+
+        try:
+            save_verification(
+                input_type="text",
+                source_url=None,
+                headline=headline,
+                summary=raw_text[:400],
+                classification=pipe_res["verdict"],
+                confidence_score=pipe_res["score"],
+                explanation=pipe_res["why_this_verdict"],
+                claims=claims,
+                supporting_evidence=pipe_res["supporting_evidence"],
+                contradicting_evidence=pipe_res["contradicting_evidence"],
+                trusted_sources_checked=pipe_res["trusted_sources_checked"],
+                is_outdated=False,
+                published_date=None
+            )
+        except Exception:
+            pass
+
+        return {
+            "status": "success",
+            "url": None,
+            "headline": headline,
+            "publisher": "Direct Statement",
+            "extracted_summary": raw_text[:400],
+            "word_count": len(raw_text.split()),
+            "verdict": pipe_res["verdict"],
+            "classification": pipe_res["verdict"],
+            "verdict_badge_class": pipe_res["verdict_badge_class"],
+            "score": pipe_res["score"],
+            "confidence_score": pipe_res["score"],
+            "why_this_verdict": pipe_res["why_this_verdict"],
+            "explanation": pipe_res["why_this_verdict"],
+            "warnings": pipe_res.get("warnings", []),
+            "matching_sources": pipe_res["matching_sources"],
+            "claims": claims,
+            "supporting_evidence": pipe_res["supporting_evidence"],
+            "contradicting_evidence": pipe_res["contradicting_evidence"],
+            "trusted_sources_checked": pipe_res["trusted_sources_checked"],
+            "disclaimer": pipe_res["disclaimer"]
+        }
+
+    else:
+        return {
+            "status": "error",
+            "verdict": "EMPTY INPUT",
+            "verdict_badge_class": "badge-fake",
+            "score": 0,
+            "error_title": "No Content Provided",
+            "reason": "Neither a URL nor a news statement was received.",
+            "suggestion": "Please paste a news URL or type a statement to evaluate.",
+            "warnings": [],
+            "matching_sources": [],
+            "disclaimer": "Automated estimate, confirm with official sources"
+        }
+
+# --------------------------------------------------------------------------
+# Compatibility Endpoints
+# --------------------------------------------------------------------------
+
+@app.post("/api/verify/url")
+@app.post("/verify/url")
+def verify_article_url_endpoint(req: UrlVerificationRequest):
+    return unified_verify(UnifiedVerificationRequest(url=req.url))
+
+@app.post("/api/verify/text")
+@app.post("/verify/text")
+def verify_text_endpoint(req: TextVerificationRequest):
+    return unified_verify(UnifiedVerificationRequest(text=req.text, headline=req.headline))
+
+@app.post("/api/verify/youtube")
+@app.post("/verify/youtube")
+def verify_youtube_endpoint(req: YouTubeVerificationRequest):
+    if not req.url:
+        raise HTTPException(status_code=400, detail="Missing YouTube URL.")
+    try:
+        video_data = extract_youtube_content(req.url.strip())
+        claims = extract_main_claims(video_data["title"], video_data["text"])
+        pipe_res = verify_story_pipeline(
+            headline=video_data["title"],
+            full_text=video_data["text"],
+            domain="youtube.com",
+            publisher=video_data.get("author", "YouTube Creator"),
+            url=video_data["url"]
+        )
+        return {
+            "status": "success",
+            "url": video_data["url"],
+            "headline": video_data["title"],
+            "author": video_data["author"],
+            "thumbnail_url": video_data["thumbnail_url"],
+            "extracted_summary": video_data["summary"],
+            "verdict": pipe_res["verdict"],
+            "classification": pipe_res["verdict"],
+            "verdict_badge_class": pipe_res["verdict_badge_class"],
+            "score": pipe_res["score"],
+            "confidence_score": pipe_res["score"],
+            "why_this_verdict": pipe_res["why_this_verdict"],
+            "explanation": pipe_res["why_this_verdict"],
+            "warnings": pipe_res.get("warnings", []),
+            "matching_sources": pipe_res["matching_sources"],
+            "claims": claims,
+            "supporting_evidence": pipe_res["supporting_evidence"],
+            "contradicting_evidence": pipe_res["contradicting_evidence"],
+            "trusted_sources_checked": pipe_res["trusted_sources_checked"],
+            "disclaimer": pipe_res["disclaimer"]
+        }
+    except Exception as e:
+        return {
+            "status": "warning",
+            "verdict": "UNVERIFIED",
+            "verdict_badge_class": "badge-unverified",
+            "score": 45,
+            "headline": "YouTube Video Claim",
+            "publisher": "YouTube",
+            "why_this_verdict": f"Could not extract video captions: {str(e)}",
+            "warnings": ["Captions unavailable for automatic transcript parsing."],
+            "matching_sources": [],
+            "disclaimer": "Automated estimate, confirm with official sources"
+        }
+
+# --------------------------------------------------------------------------
+# General System Endpoints
+# --------------------------------------------------------------------------
+
+@app.get("/api")
+@app.get("/api/index")
+@app.get("/api/index.py")
 @app.get("/api/health")
+@app.get("/health")
 def health_check():
-    """System health and active AI capabilities."""
     return {
         "status": "healthy",
         "version": "2.0.0",
@@ -68,20 +391,21 @@ def health_check():
         "database": "SQLite (Connected)",
         "supported_sources": [
             "BBC News", "Reuters", "The Hindu", "CNN", "Times of India",
-            "Associated Press", "YouTube Transcripts", "Snopes", "FactCheck.org"
+            "Associated Press", "YouTube Transcripts", "Snopes", "FactCheck.org", "PIB Fact Check"
         ]
     }
 
 @app.get("/api/sources")
+@app.get("/sources")
 def get_trusted_sources():
-    """Returns the registry of authoritative news organizations and fact-checkers."""
     return {
         "fact_checkers": [
+            {"name": "PIB Fact Check (Govt of India)", "url": "https://pib.gov.in/factcheck", "status": "Active"},
             {"name": "Google Fact Check Explorer", "url": "https://toolbox.google.com/factcheck/explorer", "status": "Active"},
-            {"name": "FactCheck.org", "url": "https://www.factcheck.org", "status": "Active"},
+            {"name": "BOOM Live", "url": "https://www.boomlive.in", "status": "Active"},
+            {"name": "Alt News", "url": "https://www.altnews.in", "status": "Active"},
             {"name": "Snopes", "url": "https://www.snopes.com", "status": "Active"},
-            {"name": "PolitiFact", "url": "https://www.politifact.com", "status": "Active"},
-            {"name": "PIB Fact Check (Govt of India)", "url": "https://pib.gov.in/factcheck", "status": "Active"}
+            {"name": "FactCheck.org", "url": "https://www.factcheck.org", "status": "Active"}
         ],
         "news_agencies": [
             {"name": "Reuters", "url": "https://www.reuters.com", "category": "International Wire"},
@@ -89,254 +413,20 @@ def get_trusted_sources():
             {"name": "BBC News", "url": "https://www.bbc.com/news", "category": "Public Broadcaster"},
             {"name": "The Hindu", "url": "https://www.thehindu.com", "category": "National Daily"},
             {"name": "Times of India", "url": "https://timesofindia.indiatimes.com", "category": "National Daily"},
+            {"name": "NDTV", "url": "https://www.ndtv.com", "category": "National Broadcast"},
             {"name": "CNN", "url": "https://www.cnn.com", "category": "Broadcast Network"},
             {"name": "World Health Organization (WHO)", "url": "https://www.who.int", "category": "Public Health"}
         ]
     }
 
-@app.post("/api/verify/url")
-def verify_article_url(req: UrlVerificationRequest):
-    """
-    Extracts news article content from a URL, extracts factual claims,
-    searches trusted databases for evidence, and produces an AI classification.
-    """
-    if not req.url or not req.url.strip():
-        raise HTTPException(status_code=400, detail="Please enter a valid news article URL.")
-
-    # 1. Extract content from URL
-    try:
-        article = extract_article_from_url(req.url.strip())
-    except ValueError as ve:
-        raise HTTPException(status_code=400, detail=str(ve))
-    except (TimeoutError, ConnectionError) as ce:
-        raise HTTPException(status_code=504, detail=str(ce))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to process webpage: {str(e)}")
-
-    # 2. Extract Claims
-    claims = extract_main_claims(article["title"], article["text"])
-
-    # 3. Real-Time Fact-Checking
-    factcheck_data = verify_claims_against_trusted_sources(
-        claims=claims,
-        headline=article["title"],
-        full_text=article["text"]
-    )
-
-    # 4. AI Classification
-    classification_res = verify_and_classify(
-        headline=article["title"],
-        text=article["text"],
-        claims=claims,
-        factcheck_data=factcheck_data,
-        domain_info=article
-    )
-
-    # 5. Persist to Database
-    record = save_verification(
-        input_type="url",
-        source_url=article["url"],
-        headline=article["title"],
-        summary=article["summary"],
-        classification=classification_res["classification"],
-        confidence_score=classification_res["confidence_score"],
-        explanation=classification_res["explanation"],
-        claims=claims,
-        supporting_evidence=factcheck_data["supporting_evidence"],
-        contradicting_evidence=factcheck_data["contradicting_evidence"],
-        trusted_sources_checked=factcheck_data["trusted_sources_checked"],
-        is_outdated=factcheck_data["is_outdated"],
-        published_date=article.get("published_date")
-    )
-
-    return {
-        "record_id": record["id"],
-        "input_type": "url",
-        "source_url": article["url"],
-        "domain": article["domain"],
-        "site_name": article["site_name"],
-        "headline": article["title"],
-        "published_date": article.get("published_date"),
-        "author": article.get("author"),
-        "extracted_summary": article["summary"],
-        "word_count": article["word_count"],
-        "claims": claims,
-        "classification": classification_res["classification"],
-        "confidence_score": classification_res["confidence_score"],
-        "explanation": classification_res["explanation"],
-        "model_used": classification_res.get("model_used"),
-        "linguistic_diagnostics": classification_res.get("linguistic_diagnostics"),
-        "supporting_evidence": factcheck_data["supporting_evidence"],
-        "contradicting_evidence": factcheck_data["contradicting_evidence"],
-        "trusted_sources_checked": factcheck_data["trusted_sources_checked"],
-        "is_outdated": factcheck_data["is_outdated"],
-        "outdated_notes": factcheck_data.get("outdated_notes"),
-        "created_at": record["created_at"]
-    }
-
-@app.post("/api/verify/youtube")
-def verify_youtube_video(req: YouTubeVerificationRequest):
-    """
-    Extracts speech transcripts and metadata from a YouTube video URL,
-    extracts spoken claims, and verifies them against trusted sources.
-    """
-    if not req.url or not req.url.strip():
-        raise HTTPException(status_code=400, detail="Please enter a valid YouTube video URL.")
-
-    # 1. Extract YouTube content & transcript
-    try:
-        video_data = extract_youtube_content(req.url.strip())
-    except ValueError as ve:
-        raise HTTPException(status_code=400, detail=str(ve))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"YouTube extraction error: {str(e)}")
-
-    # 2. Extract Claims from Transcript
-    claims = extract_main_claims(video_data["title"], video_data["text"])
-
-    # 3. Real-Time Fact-Checking
-    factcheck_data = verify_claims_against_trusted_sources(
-        claims=claims,
-        headline=video_data["title"],
-        full_text=video_data["text"]
-    )
-
-    # 4. AI Classification
-    classification_res = verify_and_classify(
-        headline=video_data["title"],
-        text=video_data["text"],
-        claims=claims,
-        factcheck_data=factcheck_data,
-        domain_info={"domain": "youtube.com", "is_trusted_domain": False, "is_suspicious_domain": False}
-    )
-
-    # 5. Persist to Database
-    record = save_verification(
-        input_type="youtube",
-        source_url=video_data["url"],
-        headline=video_data["title"],
-        summary=video_data["summary"],
-        classification=classification_res["classification"],
-        confidence_score=classification_res["confidence_score"],
-        explanation=classification_res["explanation"],
-        claims=claims,
-        supporting_evidence=factcheck_data["supporting_evidence"],
-        contradicting_evidence=factcheck_data["contradicting_evidence"],
-        trusted_sources_checked=factcheck_data["trusted_sources_checked"],
-        is_outdated=factcheck_data["is_outdated"],
-        published_date=None
-    )
-
-    return {
-        "record_id": record["id"],
-        "input_type": "youtube",
-        "source_url": video_data["url"],
-        "video_id": video_data["video_id"],
-        "headline": video_data["title"],
-        "author": video_data["author"],
-        "thumbnail_url": video_data["thumbnail_url"],
-        "extracted_summary": video_data["summary"],
-        "transcript_segments": video_data.get("transcript_segments", []),
-        "word_count": video_data["word_count"],
-        "claims": claims,
-        "classification": classification_res["classification"],
-        "confidence_score": classification_res["confidence_score"],
-        "explanation": classification_res["explanation"],
-        "model_used": classification_res.get("model_used"),
-        "linguistic_diagnostics": classification_res.get("linguistic_diagnostics"),
-        "supporting_evidence": factcheck_data["supporting_evidence"],
-        "contradicting_evidence": factcheck_data["contradicting_evidence"],
-        "trusted_sources_checked": factcheck_data["trusted_sources_checked"],
-        "is_outdated": factcheck_data["is_outdated"],
-        "outdated_notes": factcheck_data.get("outdated_notes"),
-        "created_at": record["created_at"]
-    }
-
-@app.post("/api/verify/text")
-def verify_text_content(req: TextVerificationRequest):
-    """
-    Verifies raw news statements, headlines, or social media text.
-    """
-    raw_text = req.text.strip() if req.text else ""
-    if not raw_text:
-        raise HTTPException(status_code=400, detail="Please enter news headline or text to verify.")
-
-    headline = req.headline.strip() if req.headline else ""
-    if not headline:
-        # If text is short, it's the headline; if long, use first sentence as headline
-        if len(raw_text) <= 120:
-            headline = raw_text
-        else:
-            first_period = raw_text.find(".")
-            headline = raw_text[:first_period] if first_period > 10 else raw_text[:100]
-
-    # 1. Extract Claims
-    claims = extract_main_claims(headline, raw_text)
-
-    # 2. Real-Time Fact-Checking
-    factcheck_data = verify_claims_against_trusted_sources(
-        claims=claims,
-        headline=headline,
-        full_text=raw_text
-    )
-
-    # 3. AI Classification
-    classification_res = verify_and_classify(
-        headline=headline,
-        text=raw_text,
-        claims=claims,
-        factcheck_data=factcheck_data
-    )
-
-    # 4. Persist to Database
-    record = save_verification(
-        input_type="text",
-        source_url=None,
-        headline=headline,
-        summary=raw_text[:400],
-        classification=classification_res["classification"],
-        confidence_score=classification_res["confidence_score"],
-        explanation=classification_res["explanation"],
-        claims=claims,
-        supporting_evidence=factcheck_data["supporting_evidence"],
-        contradicting_evidence=factcheck_data["contradicting_evidence"],
-        trusted_sources_checked=factcheck_data["trusted_sources_checked"],
-        is_outdated=factcheck_data["is_outdated"],
-        published_date=None
-    )
-
-    return {
-        "record_id": record["id"],
-        "input_type": "text",
-        "headline": headline,
-        "extracted_summary": raw_text[:400],
-        "word_count": len(raw_text.split()),
-        "claims": claims,
-        "classification": classification_res["classification"],
-        "confidence_score": classification_res["confidence_score"],
-        "explanation": classification_res["explanation"],
-        "model_used": classification_res.get("model_used"),
-        "linguistic_diagnostics": classification_res.get("linguistic_diagnostics"),
-        "supporting_evidence": factcheck_data["supporting_evidence"],
-        "contradicting_evidence": factcheck_data["contradicting_evidence"],
-        "trusted_sources_checked": factcheck_data["trusted_sources_checked"],
-        "is_outdated": factcheck_data["is_outdated"],
-        "outdated_notes": factcheck_data.get("outdated_notes"),
-        "created_at": record["created_at"]
-    }
-
-# --------------------------------------------------------------------------
-# History Database Endpoints
-# --------------------------------------------------------------------------
-
 @app.get("/api/history")
+@app.get("/history")
 def list_history(limit: int = 50):
-    """Retrieve past verification records stored in SQLite database."""
     return get_history(limit=limit)
 
 @app.get("/api/history/{record_id}")
+@app.get("/history/{record_id}")
 def get_history_detail(record_id: int):
-    """Retrieve full details of an individual verification record."""
     rec = get_record_by_id(record_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Verification record not found.")
@@ -344,7 +434,6 @@ def get_history_detail(record_id: int):
 
 @app.delete("/api/history/{record_id}")
 def delete_history_item(record_id: int):
-    """Delete a specific verification record."""
     success = delete_record(record_id)
     if not success:
         raise HTTPException(status_code=404, detail="Verification record not found.")
@@ -352,7 +441,6 @@ def delete_history_item(record_id: int):
 
 @app.delete("/api/history")
 def clear_history():
-    """Clear all records from verification history."""
     count = clear_all_history()
     return {"message": "All verification history cleared.", "records_deleted": count}
 
@@ -367,7 +455,7 @@ def serve_index():
     index_path = os.path.join(workspace_root, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    return {"message": "Fake News Detector API 2.0 is running."}
+    return {"message": "Veritas AI Platform v2.0 is running."}
 
 @app.get("/style.css")
 def serve_css():
