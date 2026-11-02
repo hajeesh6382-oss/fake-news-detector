@@ -5,7 +5,10 @@ from urllib.parse import urlparse
 from typing import Dict, Any, Optional, List
 import requests
 from bs4 import BeautifulSoup
-import trafilatura
+try:
+    import trafilatura
+except ImportError:
+    trafilatura = None
 
 from backend.config import config
 from backend.models.article import ExtractedArticle
@@ -177,18 +180,19 @@ def extract_article_content(url_input: str) -> ExtractedArticle:
     is_live = "/live/" in normalized_url or "live-news" in normalized_url or "liveblog" in normalized_url
 
     article_text = ""
-    try:
-        # Trafilatura provides pristine text with boilerplate and ads removed
-        trafilatura_text = trafilatura.extract(
-            html,
-            include_comments=False,
-            include_tables=False,
-            no_fallback=False
-        )
-        if trafilatura_text and len(trafilatura_text.strip()) >= 80:
-            article_text = trafilatura_text.strip()
-    except Exception as e:
-        logger.warning(f"Trafilatura extraction exception: {e}")
+    if trafilatura:
+        try:
+            # Trafilatura provides pristine text with boilerplate and ads removed
+            trafilatura_text = trafilatura.extract(
+                html,
+                include_comments=False,
+                include_tables=False,
+                no_fallback=False
+            )
+            if trafilatura_text and len(trafilatura_text.strip()) >= 80:
+                article_text = trafilatura_text.strip()
+        except Exception as e:
+            logger.warning(f"Trafilatura extraction exception: {e}")
 
     # Fallback to BeautifulSoup if Trafilatura missed content (e.g. on live blogs)
     if not article_text or len(article_text.split()) < 30:
