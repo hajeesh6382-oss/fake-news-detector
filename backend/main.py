@@ -37,6 +37,7 @@ app.include_router(search_router)
 app.include_router(history_router)
 
 # Root-level aliases for Vercel Serverless Function compatibility
+@app.post("/api")
 @app.post("/verify")
 @app.post("/verify/url")
 @app.post("/api/verify.py")
