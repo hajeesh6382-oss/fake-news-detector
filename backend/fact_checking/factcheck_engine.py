@@ -4,7 +4,7 @@ import urllib.parse
 import math
 from collections import Counter
 from datetime import datetime
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 import requests
 import xml.etree.ElementTree as ET
 from backend.config import config
