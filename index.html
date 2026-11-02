@@ -20,7 +20,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <link rel="stylesheet" href="style.css?v=2.2.0">
+  <link rel="stylesheet" href="style.css?v=2.2.1">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
 </head>
 <body>
@@ -355,7 +355,14 @@
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
-              <span>Authentic transcripts are parsed directly via captions. If captions are disabled by the video author, you can verify specific claims in the Direct Text tab.</span>
+              <span>Authentic transcripts are parsed directly via captions. If captions are disabled by the video author, our engine automatically audits the video's title and metadata against verified fact-check sources.</span>
+            </div>
+
+            <!-- Quick YouTube Video Samples -->
+            <div class="sample-links-bar">
+              <span class="sample-links-label">Try sample video links:</span>
+              <button type="button" class="link-chip" onclick="loadSampleYouTube('https://www.youtube.com/watch?v=dQw4w9WgXcQ')">YouTube Standard URL</button>
+              <button type="button" class="link-chip" onclick="loadSampleYouTube('https://youtu.be/dQw4w9WgXcQ')">YouTube Short URL</button>
             </div>
           </div>
 
@@ -1126,6 +1133,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <!-- JavaScript logic -->
-  <script src="app.js?v=2.2.0"></script>
+  <script src="app.js?v=2.2.1"></script>
 </body>
 </html>

@@ -167,9 +167,11 @@ const realKeywordCloud = document.getElementById("realKeywordCloud");
 // ============================================================
 
 function switchView(viewName, subTab = null) {
+  const normView = (viewName || "").toLowerCase();
+
   // Update nav tabs
   document.querySelectorAll(".nav-tab").forEach(tab => {
-    tab.classList.toggle("active", tab.dataset.view === viewName);
+    tab.classList.toggle("active", (tab.dataset.view || "").toLowerCase() === normView);
   });
 
   // Update views
@@ -177,18 +179,26 @@ function switchView(viewName, subTab = null) {
     view.classList.remove("active");
   });
 
-  const targetView = document.getElementById(`view${capitalize(viewName)}`);
+  let targetView = null;
+  if (normView === "dashboard") targetView = document.getElementById("viewDashboard");
+  else if (normView === "verify") targetView = document.getElementById("viewVerify");
+  else if (normView === "results") targetView = document.getElementById("viewResults");
+  else if (normView === "history") targetView = document.getElementById("viewHistory");
+  else if (normView === "sources") targetView = document.getElementById("viewSources");
+  else if (normView === "about") targetView = document.getElementById("viewAbout");
+  else targetView = document.getElementById(`view${capitalize(viewName)}`);
+
   if (targetView) {
     targetView.classList.add("active");
   }
 
-  // Handle sub-tab if specified
-  if (viewName === "verify" && subTab) {
+  // Handle sub-tab if specified (e.g. switchView('verify', 'youtube'))
+  if (normView === "verify" && subTab) {
     switchInputTab(subTab);
   }
 
   // Refresh history if navigating to history
-  if (viewName === "history") {
+  if (normView === "history") {
     loadDatabaseHistory();
   }
 
@@ -196,6 +206,8 @@ function switchView(viewName, subTab = null) {
 }
 
 function switchInputTab(tabName) {
+  const norm = (tabName || "").toLowerCase();
+
   document.querySelectorAll(".input-tab").forEach(tab => {
     tab.classList.remove("active");
   });
@@ -203,8 +215,23 @@ function switchInputTab(tabName) {
     pane.classList.remove("active");
   });
 
-  const btn = document.getElementById(`tab${capitalize(tabName)}Btn`);
-  const pane = document.getElementById(`pane${capitalize(tabName)}`);
+  let btn = null;
+  let pane = null;
+
+  if (norm === "youtube") {
+    btn = document.getElementById("tabYouTubeBtn") || document.getElementById("tabYoutubeBtn");
+    pane = document.getElementById("paneYouTube") || document.getElementById("paneYoutube");
+  } else if (norm === "url") {
+    btn = document.getElementById("tabUrlBtn");
+    pane = document.getElementById("paneUrl");
+  } else if (norm === "text") {
+    btn = document.getElementById("tabTextBtn");
+    pane = document.getElementById("paneText");
+  } else {
+    btn = document.getElementById(`tab${capitalize(tabName)}Btn`);
+    pane = document.getElementById(`pane${capitalize(tabName)}`);
+  }
+
   if (btn) btn.classList.add("active");
   if (pane) pane.classList.add("active");
 }
@@ -615,37 +642,70 @@ async function verifyYouTubeVideo() {
     return;
   }
 
-  showProcessing("Analyzing YouTube Video & Content...", "Retrieving video metadata, evaluating claims, and querying fact-check archives");
+  // 1. URL validation
+  if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+    renderErrorState({
+      error_title: "Invalid YouTube URL",
+      reason: `'${url}' does not appear to be a YouTube video link.`,
+      suggestion: "Please enter a valid link from youtube.com or youtu.be (e.g. https://www.youtube.com/watch?v=... or https://youtu.be/...)."
+    });
+    showToast("⚠️ Invalid YouTube link format");
+    return;
+  }
 
-  // Attempt fast backend check if online with strict 1.5s timeout
-  if (isBackendOnline) {
-    try {
-      const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 1500);
-      const response = await fetch(`${API_BASE}/api/verify/youtube`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-        signal: controller.signal
-      });
-      clearTimeout(tid);
+  // 2. Progressive Loading Steps (All 8 Verification Stages)
+  showProcessing("1. Extracting YouTube video & transcript...", "Retrieving video metadata, subtitles, and spoken statements");
+  let t1 = setTimeout(() => updateProcessingStep(1, "2. Parsing spoken assertions...", "Extracting quotes, numbers, and key factual statements"), 700);
+  let t2 = setTimeout(() => updateProcessingStep(2, "3. Searching international news platforms...", "Querying BBC, Reuters, AP, CNN archives for matching reports"), 1400);
+  let t3 = setTimeout(() => updateProcessingStep(3, "4. Searching Indian news platforms...", "Querying The Hindu, Indian Express, TOI, NDTV, ANI"), 2100);
+  let t4 = setTimeout(() => updateProcessingStep(4, "5. Cross-referencing wire reports...", "Evaluating independent coverage vs syndicated reprints"), 2800);
+  let t5 = setTimeout(() => updateProcessingStep(5, "6. Auditing official debunks...", "Auditing PIB Fact Check, BOOM, Alt News, and Snopes hoaxes"), 3500);
+  let t6 = setTimeout(() => updateProcessingStep(6, "7. Calculating evidence alignment...", "Computing TF-IDF semantic correlation and entity overlap"), 4200);
+  let t7 = setTimeout(() => updateProcessingStep(7, "8. Synthesizing AI verdict...", "Generating evidence-based REAL / FAKE / UNVERIFIED verdict"), 4900);
 
-      if (response.ok) {
-        const data = await response.json();
-        hideProcessing();
-        renderFullEvidenceDashboard(data);
-        renderSidebarAnalysis(data);
-        showToast(`✅ Video verified: ${data.classification}`);
-        switchView("results");
-        loadDatabaseHistory();
+  const clearTimers = () => {
+    clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
+    clearTimeout(t5); clearTimeout(t6); clearTimeout(t7);
+  };
+
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 12000);
+    const response = await fetch(`${API_BASE}/api/verify/youtube`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+      signal: controller.signal
+    }).catch(() => null);
+
+    clearTimeout(tid);
+    clearTimers();
+
+    if (response && response.ok) {
+      const data = await response.json();
+      hideProcessing();
+
+      if (data.status === "error") {
+        renderErrorState(data);
+        showToast(`⚠️ ${data.error_title || "Verification notice"}`);
         return;
       }
-    } catch (err) {
-      console.warn("Backend API unavailable, using client-side YouTube engine:", err);
+
+      renderSidebarAnalysis(data);
+      renderFullEvidenceDashboard(data);
+      saveLocalHistory(data);
+      loadDatabaseHistory();
+      showToast(`✅ Video verified: ${data.classification || data.verdict}`);
+      return;
     }
+  } catch (err) {
+    console.warn("Backend API unavailable, using client-side YouTube engine:", err);
+  } finally {
+    clearTimers();
   }
 
   // Graceful fallback to client-side YouTube analysis
+  hideProcessing();
   await verifyYouTubeVideoClientSide(url);
 }
 
@@ -675,6 +735,7 @@ async function verifyYouTubeVideoClientSide(url) {
     video_id: videoId,
     headline: videoTitle,
     author: author,
+    publisher: `YouTube (${author})`,
     thumbnail_url: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : "",
     extracted_summary: `YouTube video by ${author}: "${videoTitle}"`,
     word_count: videoTitle.split(/\s+/).length,
@@ -703,14 +764,12 @@ async function verifyYouTubeVideoClientSide(url) {
     created_at: new Date().toISOString()
   };
 
-  setTimeout(() => {
-    hideProcessing();
-    renderFullEvidenceDashboard(evidenceObj);
-    renderSidebarAnalysis(evidenceObj);
-    saveLocalHistory(localRes);
-    showToast(`✅ Video verified: ${evidenceObj.classification}`);
-    switchView("results");
-  }, 350);
+  hideProcessing();
+  renderSidebarAnalysis(evidenceObj);
+  renderFullEvidenceDashboard(evidenceObj);
+  saveLocalHistory(evidenceObj);
+  loadDatabaseHistory();
+  showToast(`✅ Video verified: ${evidenceObj.classification}`);
 }
 
 if (verifyYouTubeBtn) verifyYouTubeBtn.addEventListener("click", verifyYouTubeVideo);
@@ -1688,6 +1747,16 @@ window.loadSampleUrl = function(sampleUrl) {
   }
 };
 
+// Quick Sample YouTube Video loader (called from link chips in index.html)
+window.loadSampleYouTube = function(sampleUrl) {
+  if (youtubeUrlInput) {
+    switchInputTab("youtube");
+    youtubeUrlInput.value = sampleUrl;
+    showToast(`🎥 Loaded: ${sampleUrl}`);
+    verifyYouTubeVideo();
+  }
+};
+
 // Copy & Share Full Dossier
 function copyFullDossier() {
   if (!currentAnalysisRecord) return;
@@ -1803,6 +1872,7 @@ function showToast(msg) {
 window.switchView = switchView;
 window.switchInputTab = switchInputTab;
 window.loadSampleUrl = loadSampleUrl;
+window.loadSampleYouTube = loadSampleYouTube;
 window.clearActiveInputs = clearActiveInputs;
 window.performCheck = performCheck;
 window.verifyArticleUrl = verifyArticleUrl;
