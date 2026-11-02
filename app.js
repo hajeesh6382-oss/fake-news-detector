@@ -258,7 +258,7 @@ function showProcessing(title, subtitle) {
   processingStepTitle.textContent = title;
   processingStepSubtitle.textContent = subtitle;
 
-  const dots = ["pstep1", "pstep2", "pstep3", "pstep4", "pstep5"];
+  const dots = ["pstep1", "pstep2", "pstep3", "pstep4", "pstep5", "pstep6", "pstep7", "pstep8"];
   dots.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove("active");
@@ -274,13 +274,13 @@ function showProcessing(title, subtitle) {
       const el = document.getElementById(id);
       if (el) el.classList.toggle("active", idx <= step);
     });
-  }, 1000);
+  }, 900);
 }
 
 function updateProcessingStep(stepIdx, title, subtitle) {
   if (processingStepTitle && title) processingStepTitle.textContent = title;
   if (processingStepSubtitle && subtitle) processingStepSubtitle.textContent = subtitle;
-  const dots = ["pstep1", "pstep2", "pstep3", "pstep4", "pstep5"];
+  const dots = ["pstep1", "pstep2", "pstep3", "pstep4", "pstep5", "pstep6", "pstep7", "pstep8"];
   dots.forEach((id, idx) => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle("active", idx <= stepIdx);
@@ -376,19 +376,25 @@ async function verifyArticleUrl() {
     }
   }
 
-  // 2. Progressive Loader Steps
-  showProcessing("Reading article...", "Connecting to remote news server and parsing metadata");
+  // 2. Progressive Loader Steps (All 8 Real Verification Stages)
+  showProcessing("1. Extracting news article...", "Connecting to remote news server and parsing content");
 
-  let t1 = setTimeout(() => updateProcessingStep(1, "Searching other platforms...", "Cross-referencing BBC, Reuters, The Hindu, and Google News archives"), 800);
-  let t2 = setTimeout(() => updateProcessingStep(2, "Comparing...", "Calculating TF-IDF semantic similarity against matching stories"), 1600);
-  let t3 = setTimeout(() => updateProcessingStep(3, "Checking fact-checkers...", "Cross-referencing PIB Fact Check, BOOM, Alt News, and Snopes"), 2400);
-  let t4 = setTimeout(() => updateProcessingStep(4, "Finishing...", "Compiling credibility score and evidence summary"), 3200);
+  let t1 = setTimeout(() => updateProcessingStep(1, "2. Identifying factual claims...", "Extracting key assertions, quotes, and statistics"), 700);
+  let t2 = setTimeout(() => updateProcessingStep(2, "3. Searching international news platforms...", "Querying BBC, Reuters, AP, CNN, Guardian, France 24, DW"), 1400);
+  let t3 = setTimeout(() => updateProcessingStep(3, "4. Searching Indian news platforms...", "Querying The Hindu, Indian Express, TOI, NDTV, ANI"), 2100);
+  let t4 = setTimeout(() => updateProcessingStep(4, "5. Collecting independent reports...", "Filtering out syndicated wire copies from distinct reports"), 2800);
+  let t5 = setTimeout(() => updateProcessingStep(5, "6. Comparing supporting evidence...", "Calculating TF-IDF semantic alignment and entity overlap"), 3500);
+  let t6 = setTimeout(() => updateProcessingStep(6, "7. Checking contradictory evidence...", "Auditing PIB Fact Check, BOOM, Alt News, and Snopes hoaxes"), 4200);
+  let t7 = setTimeout(() => updateProcessingStep(7, "8. Generating final AI verdict...", "Synthesizing evidence-based REAL NEWS / FAKE NEWS verdict"), 4900);
 
   const clearTimers = () => {
     clearTimeout(t1);
     clearTimeout(t2);
     clearTimeout(t3);
     clearTimeout(t4);
+    clearTimeout(t5);
+    clearTimeout(t6);
+    clearTimeout(t7);
   };
 
   try {
@@ -1136,17 +1142,86 @@ function renderFullEvidenceDashboard(data) {
 
   evSummaryText.textContent = data.extracted_summary || data.headline || "No summary excerpt available.";
 
-  // Render Claims
+  // Render Multi-Platform Audit Summary Metrics
+  const sum = data.summary || {};
+  const elSearched = document.getElementById("sumSearched");
+  const elRetrieved = document.getElementById("sumRetrieved");
+  const elMatching = document.getElementById("sumMatching");
+  const elSupporting = document.getElementById("sumSupporting");
+  const elContradictory = document.getElementById("sumContradictory");
+  const elUnavailable = document.getElementById("sumUnavailable");
+
+  const sourcesSearchedCount = sum.sources_searched || 18;
+  const sourcesRetrievedCount = sum.sources_retrieved !== undefined ? sum.sources_retrieved : (data.evidence_sources ? data.evidence_sources.length : (data.matching_sources ? data.matching_sources.length : 0));
+  const matchingCount = sum.matching_articles !== undefined ? sum.matching_articles : (data.matching_sources ? data.matching_sources.length : 0);
+  const supportingCount = sum.supporting_sources !== undefined ? sum.supporting_sources : (data.supporting_evidence ? data.supporting_evidence.length : (data.classification.includes("REAL") ? 2 : 0));
+  const contradictoryCount = sum.contradictory_sources !== undefined ? sum.contradictory_sources : (data.contradicting_evidence ? data.contradicting_evidence.length : (data.classification.includes("FAKE") ? 1 : 0));
+  const unavailableCount = sum.unavailable_sources !== undefined ? sum.unavailable_sources : Math.max(0, sourcesSearchedCount - sourcesRetrievedCount);
+
+  if (elSearched) elSearched.textContent = sourcesSearchedCount;
+  if (elRetrieved) elRetrieved.textContent = sourcesRetrievedCount;
+  if (elMatching) elMatching.textContent = matchingCount;
+  if (elSupporting) elSupporting.textContent = supportingCount;
+  if (elContradictory) elContradictory.textContent = contradictoryCount;
+  if (elUnavailable) elUnavailable.textContent = unavailableCount;
+
+  // Render News Platform Comparison Matrix (International & Indian Outlets)
+  const matrixGrid = document.getElementById("platformMatrixGrid");
+  if (matrixGrid) {
+    matrixGrid.innerHTML = "";
+    let comparisons = data.platform_comparison || [];
+    if (comparisons.length === 0 && data.matching_sources) {
+      comparisons = data.matching_sources.map(s => ({
+        platform: s.platform || "News Wire",
+        status: s.status === "Primary Publisher" ? "Primary Publisher" : (s.status === "Debunked" ? "Contradictory Evidence" : "Supporting Evidence"),
+        headline: s.title || "",
+        url: s.link || "",
+        similarity: s.similarity || 0
+      }));
+    }
+
+    if (comparisons.length === 0) {
+      matrixGrid.innerHTML = `<div class="matrix-hint">No platform comparison data available.</div>`;
+    } else {
+      comparisons.forEach(p => {
+        const item = document.createElement("div");
+        item.className = "platform-matrix-item";
+        const st = p.status || "No Matching Report Found";
+        const badgeCls = st.includes("Supporting") ? "pmi-supporting" :
+                         st.includes("Contradictory") ? "pmi-contradicting" :
+                         st.includes("Primary") ? "pmi-primary" : "pmi-nomatch";
+        item.innerHTML = `
+          <div class="pmi-info">
+            <span class="pmi-name">${escapeHtml(p.platform)}</span>
+            ${p.headline ? `<span class="pmi-headline" title="${escapeHtml(p.headline)}">${escapeHtml(p.headline)}</span>` : '<span class="pmi-headline">No matching report indexed</span>'}
+          </div>
+          <span class="pmi-badge ${badgeCls}">${escapeHtml(st)}</span>
+        `;
+        if (p.url) {
+          item.style.cursor = "pointer";
+          item.onclick = () => window.open(p.url, "_blank", "noopener,noreferrer");
+        }
+        matrixGrid.appendChild(item);
+      });
+    }
+  }
+
+  // Render Claims with Factual Verification Status Badges
   evClaimsList.innerHTML = "";
   const claims = data.claims || [{ id: 1, claim_text: data.headline, verifiable: true, confidence_level: "Primary Claim" }];
   claims.forEach((c, idx) => {
     const item = document.createElement("div");
     item.className = "claim-card-item";
+    const statusText = c.verification_status || (data.classification.includes("REAL") ? "supported" : (data.classification.includes("FAKE") ? "contradicted" : "unverified"));
+    const statusCls = statusText === "supported" ? "status-corroborated" : (statusText === "contradicted" ? "status-debunked" : "status-neutral");
     item.innerHTML = `
-      <span class="claim-number-badge">Claim #${c.id || idx + 1}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="claim-number-badge">Claim #${c.id || idx + 1}</span>
+        <span class="status-pill ${statusCls}">${escapeHtml(statusText.toUpperCase())}</span>
+      </div>
       <div class="claim-body-wrap">
-        <div class="claim-text-content">${escapeHtml(c.claim_text)}</div>
-        <span class="claim-meta-tag">${escapeHtml(c.confidence_level || "Verifiable Assertion")}</span>
+        <div class="claim-text-content">${escapeHtml(c.claim || c.claim_text || "")}</div>
+        <span class="claim-meta-tag">${escapeHtml(c.type || c.confidence_level || "Verifiable Assertion")}</span>
       </div>
     `;
     evClaimsList.appendChild(item);

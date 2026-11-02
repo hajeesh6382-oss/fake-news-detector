@@ -2328,6 +2328,123 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
+/* Cross-Platform Verification Summary Card */
+.verification-summary-card {
+  padding: 20px;
+}
+.summary-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.sum-metric {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sum-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+}
+.sum-val {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.sum-real .sum-val {
+  color: var(--real-green);
+}
+.sum-fake .sum-val {
+  color: var(--fake-red);
+}
+.sum-neutral .sum-val {
+  color: var(--text-muted);
+}
+
+/* News Platform Comparison Matrix */
+.platform-matrix-card {
+  padding: 20px;
+}
+.matrix-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.platform-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.platform-matrix-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: var(--transition);
+}
+.platform-matrix-item:hover {
+  border-color: var(--primary);
+}
+.pmi-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+.pmi-name {
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+}
+.pmi-headline {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+.pmi-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.pmi-supporting {
+  background: var(--real-bg);
+  color: var(--real-green);
+  border: 1px solid var(--real-border);
+}
+.pmi-contradicting {
+  background: var(--fake-bg);
+  color: var(--fake-red);
+  border: 1px solid var(--fake-border);
+}
+.pmi-nomatch {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+.pmi-primary {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
 /* History Table Styles */
 .history-table-wrapper {
   overflow-x: auto;

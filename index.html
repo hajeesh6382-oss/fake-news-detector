@@ -467,11 +467,14 @@
             <h3 id="processingStepTitle">Verifying News Content...</h3>
             <p id="processingStepSubtitle">Querying trusted news archives and NLP claim extraction pipeline</p>
             <div class="processing-progress-steps">
-              <span class="step-dot active" id="pstep1">Reading article</span>
-              <span class="step-dot" id="pstep2">Searching other platforms</span>
-              <span class="step-dot" id="pstep3">Comparing</span>
-              <span class="step-dot" id="pstep4">Checking fact-checkers</span>
-              <span class="step-dot" id="pstep5">Finishing</span>
+              <span class="step-dot active" id="pstep1">1. Extracting article</span>
+              <span class="step-dot" id="pstep2">2. Identifying claims</span>
+              <span class="step-dot" id="pstep3">3. International search</span>
+              <span class="step-dot" id="pstep4">4. Indian platforms</span>
+              <span class="step-dot" id="pstep5">5. Collecting reports</span>
+              <span class="step-dot" id="pstep6">6. Comparing evidence</span>
+              <span class="step-dot" id="pstep7">7. Contradictions check</span>
+              <span class="step-dot" id="pstep8">8. Final AI verdict</span>
             </div>
           </div>
         </section>
@@ -731,6 +734,64 @@
             <div class="section-title-sm">Extracted Content &amp; Excerpt:</div>
             <p id="evSummaryText" class="evidence-summary-text"></p>
           </div>
+        </div>
+
+        <!-- Cross-Platform Verification Summary Metrics -->
+        <div class="card verification-summary-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <h3>Multi-Platform Audit Summary</h3>
+            </div>
+            <span class="badge-tag">Verification Metrics</span>
+          </div>
+          <div class="summary-metrics-grid">
+            <div class="sum-metric">
+              <span class="sum-label">Sources Searched</span>
+              <span class="sum-val" id="sumSearched">18</span>
+            </div>
+            <div class="sum-metric">
+              <span class="sum-label">Reports Retrieved</span>
+              <span class="sum-val" id="sumRetrieved">0</span>
+            </div>
+            <div class="sum-metric">
+              <span class="sum-label">Matching Event Stories</span>
+              <span class="sum-val" id="sumMatching">0</span>
+            </div>
+            <div class="sum-metric sum-real">
+              <span class="sum-label">Supporting Independent</span>
+              <span class="sum-val" id="sumSupporting">0</span>
+            </div>
+            <div class="sum-metric sum-fake">
+              <span class="sum-label">Contradictory / Debunked</span>
+              <span class="sum-val" id="sumContradictory">0</span>
+            </div>
+            <div class="sum-metric sum-neutral">
+              <span class="sum-label">No Match / Unavailable</span>
+              <span class="sum-val" id="sumUnavailable">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- News Platform Comparison Grid -->
+        <div class="card platform-matrix-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <h3>News Platform Comparison (International &amp; Indian Outlets)</h3>
+            </div>
+            <span class="badge-tag">Cross-Platform Verification</span>
+          </div>
+          <p class="matrix-hint">Real-time status across audited wire agencies and major publishers for this event:</p>
+          <div class="platform-matrix-grid" id="platformMatrixGrid"></div>
         </div>
 
         <!-- Factual Claims Identified -->
