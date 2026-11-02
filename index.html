@@ -105,13 +105,33 @@
           </div>
         </div>
 
+        <!-- Web News Copy & URL Helper Toolbar -->
+        <div class="web-copy-toolbar">
+          <button type="button" id="pasteClipboardBtn" class="toolbar-btn btn-paste" title="Paste news copied from another website (BBC, NDTV, WhatsApp, CNN, etc.)">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            <span>Paste Copied News</span>
+          </button>
+          <button type="button" id="fetchUrlBtn" class="toolbar-btn btn-url" title="Extract headline and inspect credibility of a news website link">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span>Fetch from Website URL</span>
+          </button>
+          <span class="toolbar-hint">Copy news from any website and click paste to analyze</span>
+        </div>
+
         <form id="newsForm" onsubmit="return false;">
           <div class="textarea-container">
             <textarea 
               id="newsInput" 
               name="news" 
               rows="5" 
-              placeholder="Paste or type a headline, social media post, or news excerpt here to analyze..."
+              placeholder="Paste or type news copied from any website (BBC, CNN, NDTV, WhatsApp, etc.), or paste a news article URL..."
               aria-label="News text to check"
               required></textarea>
             
@@ -250,6 +270,35 @@
             <ul id="reasonsList" class="reasons-list"></ul>
           </div>
 
+          <!-- Clear Analysis Breakdown & Advice Card -->
+          <div class="advice-box" id="adviceBox">
+            <div class="advice-header">
+              <span id="adviceIcon" class="advice-icon">💡</span>
+              <strong id="adviceTitle">Analysis Summary &amp; Recommendations:</strong>
+            </div>
+            <p id="adviceText" class="advice-text"></p>
+          </div>
+
+          <!-- Quick Fact Check Verification Tools -->
+          <div class="factcheck-tools-row">
+            <span class="factcheck-label">Verify Externally:</span>
+            <div class="factcheck-buttons">
+              <button type="button" id="googleNewsSearchBtn" class="btn btn-sm btn-factcheck" title="Search this news headline on Google News to check reputable media reporting">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>Search Google News</span>
+              </button>
+              <button type="button" id="googleFactCheckBtn" class="btn btn-sm btn-factcheck" title="Search claim on Google Fact Check Explorer database">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Google Fact Check</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Result Card Action Utilities -->
           <div class="result-actions">
             <button type="button" id="copyResultBtn" class="btn btn-outline" title="Copy result summary">
@@ -257,7 +306,7 @@
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
-              <span>Copy Analysis</span>
+              <span>Copy Full Report</span>
             </button>
             <button type="button" id="shareResultBtn" class="btn btn-outline" title="Share analysis">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
