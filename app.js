@@ -1798,8 +1798,18 @@ function showToast(msg) {
 }
 
 // ============================================================
-// 13. APP INITIALIZATION
+// 13. APP INITIALIZATION & GLOBAL HANDLERS
 // ============================================================
+window.switchView = switchView;
+window.switchInputTab = switchInputTab;
+window.loadSampleUrl = loadSampleUrl;
+window.clearActiveInputs = clearActiveInputs;
+window.performCheck = performCheck;
+window.verifyArticleUrl = verifyArticleUrl;
+window.verifyYouTubeVideo = verifyYouTubeVideo;
+window.viewHistoryItem = typeof viewHistoryItem !== "undefined" ? viewHistoryItem : null;
+window.deleteHistoryItem = typeof deleteHistoryItem !== "undefined" ? deleteHistoryItem : null;
+
 window.addEventListener("DOMContentLoaded", () => {
   initTheme();
   populateKeywordClouds();

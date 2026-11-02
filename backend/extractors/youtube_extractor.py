@@ -47,29 +47,49 @@ def extract_youtube_content(url: str) -> Dict[str, Any]:
     # 2. Extract Transcript / Captions
     transcript_text = ""
     transcript_segments = []
+    has_transcript = False
+    warnings = []
 
-    try:
-        # Fetch transcript using YouTubeTranscriptApi
+    raw_segments = []
+    if YouTubeTranscriptApi is not None:
         try:
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-            # Try finding manual English transcript first, then generated English, then any
-            try:
-                transcript_obj = transcript_list.find_transcript(['en', 'en-US', 'en-GB'])
-            except Exception:
-                # Find any generated or available language
-                transcript_obj = transcript_list.find_generated_transcript(['en', 'en-US'])
-            
-            raw_segments = transcript_obj.fetch()
+            api_instance = YouTubeTranscriptApi()
+            if hasattr(api_instance, "fetch"):
+                fetched = api_instance.fetch(video_id, languages=["en", "en-US", "en-GB"])
+                raw_segments = list(fetched)
+            elif hasattr(api_instance, "list"):
+                t_list = api_instance.list(video_id)
+                t_obj = t_list.find_transcript(["en", "en-US", "en-GB"])
+                raw_segments = list(t_obj.fetch())
         except Exception:
-            # Fallback to direct get_transcript
-            raw_segments = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'en-US', 'en-GB'])
+            pass
 
+        if not raw_segments:
+            try:
+                if hasattr(YouTubeTranscriptApi, "get_transcript"):
+                    raw_segments = YouTubeTranscriptApi.get_transcript(video_id, languages=["en", "en-US", "en-GB"])
+                elif hasattr(YouTubeTranscriptApi, "list_transcripts"):
+                    t_list = YouTubeTranscriptApi.list_transcripts(video_id)
+                    t_obj = t_list.find_transcript(["en", "en-US", "en-GB"])
+                    raw_segments = list(t_obj.fetch())
+            except Exception:
+                pass
+
+    if raw_segments:
         cleaned_segments = []
         full_parts = []
         for item in raw_segments:
-            seg_text = item.get("text", "").replace("\n", " ").strip()
-            if seg_text:
+            txt = ""
+            start_sec = 0
+            if isinstance(item, dict):
+                txt = item.get("text", "")
                 start_sec = int(item.get("start", 0))
+            elif hasattr(item, "text"):
+                txt = getattr(item, "text", "")
+                start_sec = int(getattr(item, "start", 0))
+
+            seg_text = txt.replace("\n", " ").strip()
+            if seg_text:
                 mins, secs = divmod(start_sec, 60)
                 timestamp_str = f"{mins:02d}:{secs:02d}"
                 cleaned_segments.append({
@@ -79,31 +99,15 @@ def extract_youtube_content(url: str) -> Dict[str, Any]:
                 })
                 full_parts.append(seg_text)
 
-        transcript_text = " ".join(full_parts)
-        transcript_segments = cleaned_segments[:30]  # Store top 30 segments for UI
-
-    except TranscriptsDisabled:
-        raise ValueError(
-            f"Transcripts are disabled by the creator for YouTube video '{title}'. "
-            "To verify this claim, copy the headline or specific spoken claim into the text verification tab."
-        )
-    except NoTranscriptFound:
-        raise ValueError(
-            f"No English subtitles or transcripts found for YouTube video '{title}'. "
-            "Verification requires accessible spoken or text content."
-        )
-    except VideoUnavailable:
-        raise ValueError("This YouTube video is private, removed, or unavailable.")
-    except Exception as e:
-        raise ValueError(
-            f"Could not retrieve video transcript: {str(e)}. "
-            "You can test the video's claim directly by typing or pasting it into the Text Verification tab."
-        )
+        if full_parts:
+            transcript_text = " ".join(full_parts)
+            transcript_segments = cleaned_segments[:30]
+            has_transcript = True
 
     if not transcript_text:
-        raise ValueError("Video transcript is empty or could not be decoded.")
+        transcript_text = title
+        warnings.append("Captions are disabled or unavailable for this video; audited using video headline & metadata.")
 
-    # Generate excerpt
     summary_excerpt = transcript_text[:500] + ("..." if len(transcript_text) > 500 else "")
 
     return {
@@ -112,10 +116,13 @@ def extract_youtube_content(url: str) -> Dict[str, Any]:
         "title": title,
         "author": author_name,
         "thumbnail_url": thumbnail_url,
+        "transcript": transcript_text,
         "text": transcript_text,
         "summary": summary_excerpt,
         "transcript_segments": transcript_segments,
+        "has_transcript": has_transcript,
         "word_count": len(transcript_text.split()),
         "domain": "youtube.com",
-        "site_name": "YouTube"
+        "site_name": "YouTube",
+        "warnings": warnings
     }

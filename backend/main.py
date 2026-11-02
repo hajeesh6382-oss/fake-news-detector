@@ -1,6 +1,6 @@
 import os
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -38,11 +38,23 @@ app.include_router(history_router)
 
 # Root-level aliases for Vercel Serverless Function compatibility
 @app.post("/api")
-@app.post("/verify")
-@app.post("/verify/url")
-@app.post("/api/verify.py")
+@app.post("/api/")
+@app.post("/api/index")
 @app.post("/api/index.py")
-async def verify_alias_endpoint(req: Dict[str, Any]):
+@app.post("/api/verify")
+@app.post("/api/verify/")
+@app.post("/api/verify/url")
+@app.post("/api/verify/url/")
+@app.post("/api/verify/text")
+@app.post("/api/verify/text/")
+@app.post("/verify")
+@app.post("/verify/")
+@app.post("/verify/url")
+@app.post("/verify/url/")
+@app.post("/verify/text")
+@app.post("/verify/text/")
+@app.post("/api/verify.py")
+async def verify_alias_endpoint(req: Dict[str, Any] = Body(default_factory=dict)):
     url = req.get("url")
     text = req.get("text")
     headline = req.get("headline")
@@ -58,7 +70,10 @@ class YouTubeVerificationRequest(BaseModel):
     url: str
 
 @app.post("/api/verify/youtube")
+@app.post("/api/verify/youtube/")
 @app.post("/verify/youtube")
+@app.post("/verify/youtube/")
+@app.post("/api/youtube")
 async def verify_youtube_endpoint(req: YouTubeVerificationRequest):
     """
     POST /api/verify/youtube
@@ -92,10 +107,13 @@ async def verify_youtube_endpoint(req: YouTubeVerificationRequest):
 # --------------------------------------------------------------------------
 
 @app.get("/api")
+@app.get("/api/")
 @app.get("/api/index")
 @app.get("/api/index.py")
 @app.get("/api/health")
+@app.get("/api/health/")
 @app.get("/health")
+@app.get("/health/")
 def health_check():
     """GET /api/health - Returns API health and capability status."""
     return {
@@ -115,7 +133,9 @@ def health_check():
     }
 
 @app.get("/api/sources")
+@app.get("/api/sources/")
 @app.get("/sources")
+@app.get("/sources/")
 def get_trusted_sources():
     """GET /api/sources - Lists accredited news publishers."""
     return {
