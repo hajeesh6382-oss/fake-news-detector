@@ -25,7 +25,7 @@ class Config:
     )
 
     # Network & Security
-    REQUEST_TIMEOUT: int = int(os.getenv("REQUEST_TIMEOUT", "10"))
+    REQUEST_TIMEOUT: int = int(os.getenv("REQUEST_TIMEOUT", "4"))
     USER_AGENT: str = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "

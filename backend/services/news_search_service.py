@@ -3,7 +3,7 @@ import time
 import urllib.parse
 import xml.etree.ElementTree as ET
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import httpx
 import asyncio
 
@@ -46,7 +46,7 @@ async def fetch_google_news_rss(client: httpx.AsyncClient, query: str, platform_
     results = []
 
     try:
-        resp = await client.get(url, timeout=7.0, follow_redirects=True)
+        resp = await client.get(url, timeout=3.5, follow_redirects=True)
         if resp.status_code == 200:
             root = ET.fromstring(resp.text)
             for item in root.findall(".//item")[:5]:
@@ -81,7 +81,7 @@ async def fetch_gdelt_articles(client: httpx.AsyncClient, query: str) -> List[Di
     results = []
 
     try:
-        resp = await client.get(url, timeout=7.0, follow_redirects=True)
+        resp = await client.get(url, timeout=3.5, follow_redirects=True)
         if resp.status_code == 200:
             data = resp.json()
             articles = data.get("articles", [])
@@ -158,7 +158,7 @@ async def search_cross_platform_news(
     headers = {"User-Agent": config.USER_AGENT}
     all_results: List[Dict[str, Any]] = []
 
-    async with httpx.AsyncClient(headers=headers, timeout=8.0) as client:
+    async with httpx.AsyncClient(headers=headers, timeout=3.5) as client:
         # Launch parallel search tasks across providers
         tasks = [
             fetch_google_news_rss(client, search_terms),
